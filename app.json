@@ -1,0 +1,26 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/camera/camera",
+    "pages/dictation/dictation",
+    "pages/wordBook/wordBook",
+    "pages/setting/setting",
+    "pages/record/record",
+    "pages/crop/crop",
+    "pages/play/play",
+    "pages/result/result",
+    "pages/textbook/textbook",
+    "pages/test/test"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#f0f4f8",
+    "navigationBarTitleText": "听写小帮手",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f0f4f8"
+  },
+  "plugins": {
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,176 @@
+page {
+  background-color: #f0f4f8;
+}
+
+.btn-hover {
+  opacity: 0.82;
+  transform: scale(0.98);
+}
+
+.page {
+  padding: 80rpx 32rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.top-info {
+  text-align: center;
+  margin-bottom: 80rpx;
+}
+.main-index {
+  font-size: 52rpx;
+  font-weight: bold;
+  color: #222222;
+  margin-bottom: 20rpx;
+}
+.sub-status {
+  font-size: 36rpx;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+.tip-volume {
+  font-size: 28rpx;
+  color: #666666;
+}
+
+/* 中间词语卡片，主题浅蓝柔和底色 */
+.word-card {
+  background: #dbeafe;
+  border-radius: 24rpx;
+  min-height: 240rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+  padding: 24rpx;
+  box-sizing: border-box;
+  gap: 16rpx;
+}
+.word-hide {
+  font-size: 40rpx;
+  color: #5579aa;
+}
+.word-show {
+  font-size: 48rpx;
+  font-weight: 500;
+  color: #1e3a8a;
+  text-align: center;
+  line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+/* 中文释义：字号略小，与英文词区分 */
+.word-show-cn {
+  font-size: 32rpx;
+  color: #5579aa;
+  font-weight: 400;
+}
+
+/* 看释义 / 看词 / 加错题 辅助按钮 */
+.assist {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 60rpx;
+}
+.btn-assist {
+  width: 180rpx;
+  height: 90rpx;
+  line-height: 90rpx;
+  padding: 0;
+  background: #ffffff;
+  border: 2rpx solid #bfdbfe;
+  border-radius: 45rpx;
+  font-size: 34rpx;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* 上一个、下一个、暂停、改单词 */
+.btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24rpx;
+  margin-bottom: 60rpx;
+}
+.btn-operate {
+  height: 110rpx;
+  line-height: 110rpx;
+  padding: 0;
+  background: #ffffff;
+  border-radius: 20rpx;
+  font-size: 38rpx;
+  font-weight: 500;
+  border: 2rpx solid #e0eaf8;
+  text-align: center;
+}
+
+/* ============ 底部固定（含安全区） ============ */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20rpx 30rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: transparent;
+  box-shadow: none;
+  border-top: none;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: env(safe-area-inset-bottom);
+  background: #f7f9fc;
+  border-top-left-radius: 20rpx;
+  border-top-right-radius: 20rpx;
+  border-top: 2rpx solid #e8edf3;
+  box-shadow: 0 -3rpx 14rpx rgba(96, 165, 250, 0.06);
+  z-index: 1;
+}
+
+.footer::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: env(safe-area-inset-bottom);
+  background: rgba(247, 249, 252, 0.8);
+  z-index: 1;
+}
+
+.confirm-btn {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 0;
+  height: 100rpx;
+  line-height: 100rpx;
+  background-color: #dbeafe;
+  color: #444444;
+  font-size: 36rpx;
+  border-radius: 50rpx;
+  font-weight: bold;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-btn::after {
+  border: none;
+}
+
+.btn-hover {
+  opacity: 0.82;
+  transform: scale(0.98);
+}

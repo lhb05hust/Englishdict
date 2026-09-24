@@ -1,0 +1,40 @@
+<view class="page">
+  <!-- 顶部状态信息 -->
+  <view class="top-info">
+    <view class="main-index">第{{currentWordIndex+1}}/{{totalCount}}个</view>
+    <view class="sub-status">
+      {{subStatusText}}
+    </view>
+    <view class="tip-volume">没听到声音？请关闭静音模式或调高音量</view>
+  </view>
+
+  <!-- 中间词语卡片 -->
+  <view class="word-card">
+    <view wx:if="{{!showCn}}" class="word-hide"></view>
+    <view wx:else class="word-show word-show-cn">{{currentWord.cn}}</view>
+
+    <view wx:if="{{!showWord}}" class="word-hide">当前词已隐藏</view>
+    <view wx:else class="word-show">{{currentWord.text}}</view>
+  </view>
+
+  <!-- 查看词语按钮 -->
+  <view class="assist">
+    <view class="btn-assist" hover-class="btn-hover" bindtap="toggleShowCn">看释义</view>
+    <view class="btn-assist" hover-class="btn-hover" bindtap="toggleShowWord">{{ showWord ? '隐藏' : '看词' }}</view>
+    <view class="btn-assist" hover-class="btn-hover" bindtap="add2ErrBook">加错题</view>
+  </view>
+
+  <!-- 操作按钮组 -->
+  <view class="btn-group">
+    <view class="btn-operate" hover-class="btn-hover" bindtap="prevWord">上一个</view>
+    <view class="btn-operate" hover-class="btn-hover" bindtap="nextWord">下一个</view>
+    <view class="btn-operate" hover-class="btn-hover" bindtap="togglePause">
+      {{playStatus === 'paused' ? '继续' : '暂停'}}
+    </view>
+    <view class="btn-operate" hover-class="btn-hover" bindtap="editCurrentWord">改单词</view>
+  </view>
+
+  <view class="footer">
+    <button class="confirm-btn" hover-class="btn-hover" bindtap="confirmFinish">结束听写</button>
+  </view>
+</view>

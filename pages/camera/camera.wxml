@@ -1,0 +1,48 @@
+<!-- pages/camera/camera.wxml -->
+<view class="container {{isNotFullScreen ? 'not-full-screen' : ''}}" style="padding-top: {{statusBarHeight}}px;">
+  <!-- 视频预览区 -->
+  <view class="camera-wrapper" style="width: {{cameraWidth}}px; height: {{cameraHeight}}px;">
+    <!-- 后置摄像头 -->
+    <camera 
+      wx:if="{{cameraSide === 'back'}}"
+      device-position="back" 
+      flash="off" 
+      class="camera-view" 
+      binderror="onCameraError"
+    ></camera>
+    <!-- 前置摄像头 -->
+    <camera 
+      wx:if="{{cameraSide === 'front'}}"
+      device-position="front" 
+      flash="off" 
+      class="camera-view" 
+      binderror="onCameraError"
+    ></camera>
+  </view>
+
+  <block wx:if="{{!isNotFullScreen}}">
+    <!-- 拍照按钮 -->
+    <view class="shoot-inner" bindtap="takePhoto"></view>
+    <!-- 底部操作栏 -->
+    <view class="action-bar">
+      <view class="action-btn close-btn" bindtap="closeCamera">
+        <text class="icon">✕</text>
+      </view>
+      <view class="action-btn flip-btn {{flipAnim ? 'flip' : ''}}" bindtap="toggleCamera">
+        <text class="icon">⟳</text>
+      </view>
+    </view>
+  </block> 
+  <block wx:if="{{isNotFullScreen}}">
+    <!-- 底部操作栏 -->
+    <view class="action-bar">
+      <view class="action-btn close-btn" bindtap="closeCamera">
+        <text class="icon">✕</text>
+      </view>
+      <view class="shoot-inner" bindtap="takePhoto"></view>
+      <view class="action-btn flip-btn {{flipAnim ? 'flip' : ''}}" bindtap="toggleCamera">
+        <text class="icon">⟳</text>
+      </view>
+    </view>
+  </block>
+</view>

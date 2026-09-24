@@ -1,0 +1,59 @@
+<!-- pages/record/record.wxml -->
+<view class="page-container">
+  <van-nav-bar
+    custom-style="background-color: #f0f4f8; color: #222222; padding-top:25rpx"
+  >
+  <view slot="left" class="card-title">
+      听写记录
+    </view>
+    <!-- 右侧提示文字插槽 -->
+    <view slot="right" class="nav-tip">
+      点开可查看和复习
+    </view>
+  </van-nav-bar>
+
+  <!-- 列表区域 -->
+  <view class="list-wrapper">
+    <van-swipe-cell
+      wx:for="{{recordList}}"
+      wx:key="rId"
+      right-width="{{70}}"
+    >
+      <!-- 卡片主体（原样保留） -->
+      <view 
+        class="record-card"
+        data-rid="{{item.rId}}"
+        bindtap="onRecordTap"
+      >
+        <view class="card-left">
+          <view class="time-row">
+            <text class="time-text">{{item.timeDisplay}}</text>
+          </view>
+          <view class="count-row">
+            <text class="count-text">听写单词 {{item.wordCount}} 个，错 </text>
+            <text class="err-num">{{item.errCount}}</text>
+            <text class="count-text"> 个</text>
+          </view>
+        </view>
+        <view class="card-right">
+          <van-icon name="arrow" class="arrow-icon" size="32rpx" />
+        </view>
+      </view>
+
+      <!-- 右侧滑出的删除按钮 -->
+      <view 
+        slot="right"
+        class="swipe-delete"
+        data-rid="{{item.rId}}"
+        catchtap="onDeleteRecord"
+      >删除</view>
+    </van-swipe-cell>
+
+    <!-- 空状态（原样保留） -->
+    <view wx:if="{{recordList.length === 0}}" class="empty-state">
+      <van-icon name="records-o" size="120rpx" color="#dcdcdc" />
+      <text class="empty-text">暂无听写记录</text>
+      <text class="empty-sub">完成一次听写后，记录将出现在这里</text>
+    </view>
+  </view>
+</view>

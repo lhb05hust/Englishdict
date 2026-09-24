@@ -1,0 +1,78 @@
+<!-- pages/crop/crop.wxml -->
+<view class="container {{isNotFullScreen ? 'not-full-screen' : ''}}">
+  <!-- 卡片 -->
+  <view class="card">
+    <!-- 标题 -->
+    <view class="header">
+      <view class="rotate-btn rotate-left" bindtap="onRotateLeft" hover-class="rotate-btn-hover">↺</view>
+      <view class="title">图片预览与框选<view class="help-btn" wx:if="{{showHelpBtn}}" bindtap="showHelp"></view></view>
+      <view class="rotate-btn rotate-right" bindtap="onRotateRight" hover-class="rotate-btn-hover">↻</view>
+    </view>
+
+    <!-- 图片区域（固定宽高，半透明灰黑背景） -->
+    <view class="image-wrap" id="imageWrap" style="width: 640rpx; height: {{640 * (8.9/6.55)}}rpx;">
+      <image src="{{imagePath}}" mode="aspectFit" class="image" id="cropImage" />
+      <!-- 裁剪区域容器 -->
+      <view class="crop-wrapper" id="cropWrapper">
+        <!-- 裁剪框 -->
+        <view 
+          class="crop-box {{showBreath ? 'breath' : ''}}"
+          style="left: {{crop.x}}rpx; top: {{crop.y}}rpx; width: {{crop.w}}rpx; height: {{crop.h}}rpx;"
+          catchtouchstart="onBoxTouchStart"
+          catchtouchmove="onBoxTouchMove"
+          catchtouchend="onTouchEnd"
+        >
+          <!-- 四个圆角控制点 -->
+          <!-- 左上 -->
+          <view 
+            class="corner lt"
+            style="--corner-size: {{cornerSize}}rpx;"
+            data-corner="lt"
+            catchtouchstart="onCornerTouchStart"
+            catchtouchmove="onCornerTouchMove"
+            catchtouchend="onTouchEnd"
+          ></view>
+          <!-- 右上 -->
+          <view 
+            class="corner rt"
+            style="--corner-size: {{cornerSize}}rpx;"
+            data-corner="rt"
+            catchtouchstart="onCornerTouchStart"
+            catchtouchmove="onCornerTouchMove"
+            catchtouchend="onTouchEnd"
+          ></view>
+          <!-- 左下 -->
+          <view 
+            class="corner lb"
+            style="--corner-size: {{cornerSize}}rpx;"
+            data-corner="lb"
+            catchtouchstart="onCornerTouchStart"
+            catchtouchmove="onCornerTouchMove"
+            catchtouchend="onTouchEnd"
+          ></view>
+          <!-- 右下 -->
+          <view 
+            class="corner rb"
+            style="--corner-size: {{cornerSize}}rpx;"
+            data-corner="rb"
+            catchtouchstart="onCornerTouchStart"
+            catchtouchmove="onCornerTouchMove"
+            catchtouchend="onTouchEnd"
+          ></view>
+        </view>
+      </view>
+      <!-- 提示文字 -->
+      <view class="hint" wx:if="{{showHint}}" bindtap="hideHint">👆 先拖拉方框，框选出要听写的字词</view>
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="toolbar">
+      <button class="btn-exit" bindtap="goHome" hover-class="btn-hover">退出</button>
+      <button class="btn-reselect" bindtap="reselectImage" hover-class="btn-hover">{{resButtonText}}</button>
+      <button class="btn-start" bindtap="startRecognition" hover-class="btn-hover">开始识别</button>
+    </view>
+  </view>
+</view>
+
+<!-- 隐藏 Canvas（用于裁剪） -->
+<canvas type="2d" id="cropCanvas" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;"></canvas>

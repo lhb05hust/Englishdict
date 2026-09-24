@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="header">
+    <text class="title">{{bFromPlay?'检查单词':'听写记录'}}</text>
+    <text class="count">共 {{wordList.length}} 个词</text>
+  </view>
+
+  <!-- 提示语 -->
+  <view class="tips-row">
+    <text class="tip-text">{{bFromPlay?'请对照清单核对听写结果，记得标错哦':timeDisplay}}</text>
+    <text class="count errText">错 {{errCount}} 个</text>
+  </view>
+
+  <!-- 网格列表 -->
+  <scroll-view class="grid-list" scroll-y>
+    <view wx:if="{{wordList.length === 0}}" class="empty-tip">
+      <text>暂无单词</text>
+    </view>
+
+    <!-- Grid 容器 -->
+    <view class="grid-container">
+      <!-- 卡片 -->
+      <view wx:for="{{wordList}}" wx:key="wordId" class="grid-item">
+        <!-- 单词 -->
+        <text class="word {{item.isErr ? 'errText':''}}">{{item.text}}</text>
+        <text class="tone {{item.isErr ? 'errText':''}}">{{item.cn}}</text>
+
+        <!-- 操作按钮 -->
+        <view wx:if="{{bFromPlay}}" class="item-actions">
+          <button wx:if="{{!item.isErr}}" class="action-btn" bindtap="markErr" data-id="{{item.wordId}}" disabled="{{!bFromPlay}}">标错</button>
+          <button wx:else class="action-btn unMarkErr" bindtap="unMarkErr" data-id="{{item.wordId}}" disabled="{{!bFromPlay}}">取消</button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部固定按钮 -->
+  <view class="footer">
+    <button class="confirm-btn secondary" bindtap="onRedictAll" hover-class="btn-hover">重新练习</button>
+    <button class="confirm-btn primary" bindtap="onRedictErrs" hover-class="btn-hover">重听错词</button>
+  </view>
+</view>

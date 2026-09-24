@@ -1,0 +1,218 @@
+page {
+  background: #f0f4f8;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+.container {
+  padding-top: 0;
+  width: 100vw;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: #f0f4f8;
+  box-sizing: border-box;
+  padding-bottom: 0;
+}
+
+/* 顶部工具栏 */
+.toolbar {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #e4edf8;
+  flex-shrink: 0;
+}
+.sort-tabs {
+  display: flex;
+}
+.sort-item {
+  font-size: 28rpx;
+  color: #888888;
+  margin-right: 30rpx;
+  padding-bottom: 10rpx;
+  border-bottom: 4rpx solid transparent;
+}
+.sort-item.active {
+  color: #222222;
+  border-bottom-color: #60a5fa;
+  font-weight: bold;
+}
+.batch-btn {
+  font-size: 28rpx;
+  color: #222222;
+  padding: 10rpx 20rpx;
+  border: 1rpx solid #cccccc;
+  border-radius: 8rpx;
+}
+
+/* Tab切换 */
+.tab-bar {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  background: #ffffff;
+  padding: 0 30rpx;
+  border-bottom: 1rpx solid #e4edf8;
+  flex-shrink: 0;
+}
+.tab-item {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 26rpx;
+  padding: 20rpx 0;
+  color: #888888;
+  border-bottom: 4rpx solid transparent;
+  white-space: nowrap;
+}
+.tab-item.active {
+  color: #222222;
+  border-bottom-color: #60a5fa;
+  font-weight: bold;
+}
+
+/* 网格列表：flex:1 撑满 toolbar / tab-bar 之后的剩余空间，
+   min-height:0 让 flex 能真正把它压到可视高度，触发 scroll-y 滚动 */
+.grid-list {
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rpx 20rpx 20rpx 0rpx;
+  overflow: hidden; 
+}
+.empty-tip {
+  text-align: center;
+  color: #888888;
+  font-size: 30rpx;
+  padding: 120rpx 0;
+}
+
+/* 内容区：
+   底部固定按钮 footer 高约 140rpx（padding 20 + 按钮 100 + padding 20），
+   这里留 160rpx，保证滚到底时最后一行卡片不被 footer 遮住 */
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 3rpx;
+  box-sizing: border-box;
+  margin-left: 6rpx;
+  padding-bottom: 280rpx;
+}
+
+/* 卡片占 1/2 宽度（英文单词较长） */
+.grid-item {
+  flex: 0 0 calc(50% - 22rpx);
+  margin: 10rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 16rpx 12rpx 12rpx;
+  box-shadow: 0 3rpx 14rpx rgba(96, 165, 250, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-sizing: border-box;
+  min-height: 200rpx;
+  justify-content: space-around;
+}
+
+.checkbox-wrap {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+}
+
+.word {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #222222;
+  margin-top: 4rpx;
+  text-align: center;
+  line-height: 1.35;
+  word-break: break-word;
+}
+.error-count {
+  font-size: 26rpx;
+  color: #e53e3e;
+  margin-top: -18rpx;
+}
+
+.item-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  gap: 8rpx;
+  margin-top: 4rpx;
+}
+
+.action-btn {
+  padding: 0;
+  border-radius: 12rpx;
+  border: none;
+  font-size: 26rpx;
+  font-weight: normal !important;
+  text-align: center;
+  width: 95rpx !important;
+  height: 48rpx;
+  line-height: 48rpx;
+  box-shadow: none;
+}
+.action-btn.dict { background: #dbeafe; color: #222222; }
+.action-btn.master { background: #e2f4e9; color: #222222; }
+.action-btn.undo-master { background: #fce8e8; color: #222222; }
+.action-btn.delete { background: #faebeb; color: #b56d6d; }
+.action-btn:active { opacity: 0.75; }
+
+.batch-bar {
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  padding: 20rpx 30rpx;
+  border-top: 1rpx solid #e4edf8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.batch-actions { display: flex; }
+.batch-action { font-size: 28rpx; color: #222222; margin-left: 30rpx; }
+.batch-action:active { opacity: 0.6; }
+
+/* 底部固定按钮 */
+.footer {
+  position: fixed;
+  bottom: 0rpx;
+  left: 0;
+  width: 100%;
+  padding: 20rpx 30rpx;
+  background: #f7f9fc;
+  box-sizing: border-box;
+  box-shadow: 0 -3rpx 14rpx rgba(96, 165, 250, 0.06);
+  z-index: 1000;
+  border-top-left-radius: 20rpx;
+  border-top-right-radius: 20rpx;
+  border-top: 2rpx solid #e8edf3;
+}
+.confirm-btn {
+  width: 100%;
+  padding: 0;
+  height: 100rpx;
+  line-height: 100rpx;
+  background-color: #dbeafe;
+  color: #444444;
+  font-size: 36rpx;
+  border-radius: 50rpx;
+  font-weight: bold;
+}
+.confirm-btn::after { border: none; }
+.btn-hover { opacity: 0.82; transform: scale(0.98); }

@@ -1,0 +1,269 @@
+<view class="container">
+  <view class="header">
+    <text class="title">确认单词</text>
+    <text class="count">共 {{wordList.length}} 个词</text>
+  </view>
+
+  <!-- 提示语 -->
+  <view class="tips-row">
+    <text class="tip-text">点击单词或释义即可修改</text>
+    <text class="tip-text">拖右上角可排序</text>
+  </view>
+
+  <!-- 词语列表区域 (Grid布局) -->
+  <view class="grid-container">
+    <view 
+      class="grid-item {{draggingId === item.wordId ? 'dragging' : ''}}"
+      wx:for="{{wordList}}"
+      wx:key="wordId"
+      data-id="{{item.wordId}}"
+    >
+      <view class="card-wrapper">
+        <view 
+          class="movable-handle" 
+          catchtouchstart="onDragStart" 
+          catchtouchmove="onDragMove" 
+          catchtouchend="onDragEnd"
+          data-index="{{index}}"
+        >
+          <text class="drag-icon">☰</text>
+        </view>
+
+        <!-- 卡片主体 -->
+        <view class="card">
+          <view class="card-top" bindtap="onEditWord" data-index="{{index}}">
+            <text class="index-num">{{index + 1}}</text>
+            <text class="word-text">{{item.text}}</text>
+          </view>
+          <view class="cn-row" bindtap="onEditCn" data-index="{{index}}">
+            <text class="cn-text">{{item.cn || '点击添加释义'}}</text>
+          </view>
+          <view class="delete-btn" hover-class="btn-hover" bindtap="onDelete" data-index="{{index}}">删除
+          </view>
+        </view>
+      </view>
+    </view>  
+    <!-- 新增卡片 (占位符) -->
+    <view class="card add-card" bindtap="onAddNew">
+      <text class="plus-icon">+</text>
+      <text class="add-placeholder">批量新增</text>
+    </view>
+  </view>
+
+  <!-- 幽灵卡片也要加序号 -->
+  <view 
+    class="ghost-card" 
+    wx:if="{{isDragging}}"
+    style="left: {{ghostX}}px; top: {{ghostY}}px; width: {{ghostW}}px; height: {{ghostH}}px;"
+  >
+    <view class="card-wrapper">
+      <view class="movable-handle">
+        <text class="drag-icon">☰</text>
+      </view>
+
+      <!-- 卡片主体 -->
+      <view class="card">
+        <view class="card-top">
+          <text class="index-num">{{ghostIndex + 1}}</text>
+          <text class="word-text">{{ghostItem.text}}</text>
+        </view>
+        <view class="cn-row">
+          <text class="cn-text">{{ghostItem.cn || ''}}</text>
+        </view>
+      </view>
+    </view>  
+  </view>
+
+  <view class="section">
+    <view class="card-title">听写规则</view>
+    <van-cell-group border="{{true}}">
+      <!-- 报读顺序 -->
+      <van-cell
+        border="{{true}}"
+        custom-class="setting-cell"
+        title-class="hide-default-title"
+      >
+        <view slot="title" class="setting-block">
+          <text class="setting-label">报读顺序</text>
+          <view class="options-row">
+            <view
+              class="option-btn {{order === 'sequential' ? 'active' : ''}}"
+              bindtap="onOrderChange"
+              data-value="sequential"
+              hover-class="btn-hover"
+            >顺序</view>
+            <view
+              class="option-btn {{order === 'random' ? 'active' : ''}}"
+              bindtap="onOrderChange"
+              data-value="random"
+              hover-class="btn-hover"
+            >随机</view>
+          </view>
+        </view>
+      </van-cell>
+
+      <!-- 每个词报几遍 -->
+      <van-cell
+        border="{{true}}"
+        custom-class="setting-cell"
+        title-class="hide-default-title"
+      >
+        <view slot="title" class="setting-block">
+          <text class="setting-label">每个词报几遍</text>
+          <view class="options-row">
+            <view
+              class="option-btn {{times === 1 ? 'active' : ''}}"
+              bindtap="onTimesChange"
+              data-value="1"
+              hover-class="btn-hover"
+            >1遍</view>
+            <view
+              class="option-btn {{times === 2 ? 'active' : ''}}"
+              bindtap="onTimesChange"
+              data-value="2"
+              hover-class="btn-hover"
+            >2遍</view>
+            <view
+              class="option-btn {{times === 3 ? 'active' : ''}}"
+              bindtap="onTimesChange"
+              data-value="3"
+              hover-class="btn-hover"
+            >3遍</view>
+          </view>
+        </view>
+      </van-cell>
+
+      <!-- 间隔时间 -->
+      <van-cell
+        border="{{true}}"
+        custom-class="setting-cell"
+        title-class="hide-default-title"
+      >
+        <view slot="title" class="setting-block">
+          <text class="setting-label">间隔时间</text>
+          <view class="options-row">
+            <view
+              class="option-btn {{interval === 3 ? 'active' : ''}}"
+              bindtap="onIntervalChange"
+              data-value="3"
+              hover-class="btn-hover"
+            >3秒</view>
+            <view
+              class="option-btn {{interval === 5 ? 'active' : ''}}"
+              bindtap="onIntervalChange"
+              data-value="5"
+              hover-class="btn-hover"
+            >5秒</view>
+            <view
+              class="option-btn {{interval === 8 ? 'active' : ''}}"
+              bindtap="onIntervalChange"
+              data-value="8"
+              hover-class="btn-hover"
+            >8秒</view>
+            <view
+              class="option-btn {{interval === 'custom' ? 'active' : ''}}"
+              bindtap="onIntervalChange"
+              data-value="custom"
+              hover-class="btn-hover"
+            >自定义</view>
+          </view>
+          <!-- 自定义时间输入框 -->
+          <view class="custom-input-row" wx:if="{{interval === 'custom'}}" bindtap="onCustomTap">
+            <input
+              class="custom-input"
+              type="number"
+              value="{{customSeconds}}"
+              disabled
+            />
+            <text class="custom-unit">秒</text>
+          </view>
+        </view>
+      </van-cell>
+      <!-- 听写数量 -->
+      <van-cell
+        border="{{false}}"
+        custom-class="setting-cell last-cell"
+        title-class="hide-default-title"
+      >
+        <view slot="title" class="setting-block">
+          <!-- 标题与数值左右对齐 -->
+          <view class="take-count-header">
+            <text class="setting-label" style="margin-bottom: 0;">听写数量</text>
+            <text class="take-count-num">{{takeCount}} 个</text>
+          </view>
+          <view class="cell-subtitle">默认全部听写，可拖动减少数量</view>
+          
+          <!-- 优化后的滑块 -->
+          <view class="slider-wrapper">
+            <slider
+              min="{{1}}"
+              max="{{totalWords}}"
+              value="{{takeCount}}"
+              activeColor="#60a5fa"
+              backgroundColor="#e0f2fe"
+              block-size="20"
+              bindchange="onTakeCountChange"
+              bindchanging="onTakeCountChanging"
+            />
+            <!-- 左右标注 -->
+            <view class="slider-labels">
+              <text>1个</text>
+              <text>全部 {{totalWords}}个</text>
+            </view>
+          </view>
+        </view>
+      </van-cell>
+    </van-cell-group>
+  </view>
+  <!-- 底部固定按钮 -->
+  <view class="footer">
+    <button class="confirm-btn" bindtap="onConfirm" hover-class="btn-hover">开始听写</button>
+  </view>
+
+  <!-- 智能批量添加弹窗 -->
+  <view class="modal-mask" style="bottom: {{keyboardHeight}}px;" wx:if="{{showAddModal}}" bindtap="onCloseAddModal">
+    <view class="modal-content" catchtap="noop">
+      <view class="modal-header">
+        <!-- 左：粘贴 -->
+        <view class="modal-paste-btn" bindtap="onPasteFromClipboard" hover-class="btn-hover">粘贴</view>
+        <!-- 中：标题 -->
+        <text class="modal-title">添加单词</text>
+        <!-- 右：清空（有内容时才显示） -->
+        <view class="modal-clear-btn" wx:if="{{addInput.length > 0}}" bindtap="onClearInput">清空</view>
+      </view>
+      <textarea
+        class="modal-textarea"
+        placeholder="输入英文单词或短语，多个用逗号、分号、顿号或换行分隔（短语内的空格会保留）。"
+        placeholder-class="modal-placeholder"
+        value="{{addInput}}"
+        bindinput="onAddInputChange"
+        maxlength="150"
+        auto-height="{{false}}"
+        adjust-position="{{false}}"
+        bindfocus="onTextareaFocus"
+        bindblur="onTextareaBlur"
+      ></textarea>
+      <!-- 字数计数器 -->
+      <view class="char-counter-row">
+        <text class="char-counter {{addInput.length >= 140 ? 'char-counter-warn' : ''}}">{{addInput.length}}/150</text>
+      </view>
+      <view class="modal-preview">
+        <text class="preview-label" wx:if="{{addInput.length === 0}}">等待输入...</text>
+        <text class="preview-label preview-label-error" wx:elif="{{parsedWords.length === 0}}">输入内容不符合规则，请重新输入</text>
+        <text class="preview-label preview-label-active" wx:else>已识别 {{parsedWords.length}} 个单词{{skippedCount > 0 ? '（已跳过 ' + skippedCount + ' 个）' : ''}}</text>
+        <scroll-view scroll-y class="preview-scroll" wx:if="{{parsedWords.length > 0}}">
+          <view class="preview-tags">
+            <view class="preview-tag" wx:for="{{parsedWords}}" wx:key="*this">{{item}}</view>
+          </view>
+        </scroll-view>
+      </view>
+      <view class="modal-footer">
+        <view class="modal-btn modal-btn-cancel" bindtap="onCloseAddModal">取消</view>
+        <view class="modal-btn modal-btn-confirm {{parsedWords.length === 0 ? 'modal-btn-disabled' : ''}}" bindtap="onConfirmAdd">确认添加</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部留白占位，避免内容被 fixed footer 遮挡 -->
+  <view class="footer-spacer"></view>
+</view>

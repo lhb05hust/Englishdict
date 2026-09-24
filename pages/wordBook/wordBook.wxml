@@ -1,0 +1,56 @@
+<!-- pages/wordBook/wordBook.wxml -->
+<view class="container">
+  <!-- 顶部工具栏 -->
+  <view class="toolbar">
+    <view class="sort-tabs">
+      <text class="sort-item {{sortType === 'newest' ? 'active' : ''}}" bindtap="changeSort" data-type="newest">最新错词</text>
+      <text class="sort-item {{sortType === 'errorCount' ? 'active' : ''}}" bindtap="changeSort" data-type="errorCount">最多错词</text>
+    </view>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tab-bar">
+    <view class="tab-item {{currentTab === 'review' ? 'active' : ''}}" bindtap="switchTab" data-tab="review">待复习 ({{reviewCount}})</view>
+    <view class="tab-item {{currentTab === 'mastered' ? 'active' : ''}}" bindtap="switchTab" data-tab="mastered">已掌握 ({{masteredCount}})</view>
+    <view class="tab-item {{currentTab === 'wait' ? 'active' : ''}}" bindtap="switchTab" data-tab="wait">待听 ({{waitlist.length}})</view>
+  </view>
+
+  <!-- 网格列表（加 scroll-y） -->
+  <scroll-view class="grid-list" scroll-y>
+    <view wx:if="{{displayList.length === 0}}" class="empty-tip">
+      <text>{{currentTab === 'review' ? '🎉 全部掌握，继续加油！' : currentTab === 'wait' ? '暂无待听单词':'暂无已掌握单词'}}</text>
+    </view>
+    <view class="grid-container">
+      <!-- 卡片 -->
+      <view wx:for="{{displayList}}" wx:key="wordId" class="grid-item">
+        <!-- 批量模式下显示复选框 -->
+        <view wx:if="{{batchMode && currentTab === 'review'}}" class="checkbox-wrap">
+          <checkbox checked="{{selectedIds.indexOf(item.wordId) !== -1}}" bindtap="toggleSelect" data-id="{{item.wordId}}" color="#07c160" />
+        </view>
+
+        <!-- 单词 -->
+        <text class="word">{{item.text}}</text>
+        <!-- 错误次数 -->
+        <text class="error-count">(错{{item.errorCount}}次)</text>
+        <!-- 操作按钮（纵向排列，居中） -->
+        <view class="item-actions">
+          <block wx:if="{{currentTab === 'review'}}">
+            <button class="action-btn dict" bindtap="startSingleDict" data-id="{{item.wordId}}" disabled="{{item.disabled}}">再听</button>
+            <button class="action-btn master" bindtap="markMastered" data-id="{{item.wordId}}">已会</button>
+          </block>
+          <block wx:elif="{{currentTab === 'mastered'}}">
+            <button class="action-btn undo-master" bindtap="unmarkMastered" data-id="{{item.wordId}}">取消</button>
+          </block>
+          <block wx:elif="{{currentTab === 'wait'}}">
+            <button class="action-btn undo-master" bindtap="unmarkWait" data-id="{{item.wordId}}">取消</button>
+          </block>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部固定按钮 -->
+  <view class="footer">
+    <button class="confirm-btn" bindtap="onConfirm" hover-class="btn-hover">重听错词</button>
+  </view>
+</view>

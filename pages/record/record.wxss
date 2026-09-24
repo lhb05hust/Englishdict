@@ -1,0 +1,111 @@
+.page-container {
+  min-height: 100vh;
+  background-color: #f0f4f8;
+}
+
+/* 标题栏右侧文字样式 */
+.nav-tip {
+  font-size: 26rpx;
+  color: #888888;
+}
+
+/* 列表容器：缩小gap，变紧凑 */
+.list-wrapper {
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.card-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #222222;
+}
+
+/* 记录卡片：减小内边距，压缩卡片高度 */
+.record-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 3rpx 14rpx rgba(96, 165, 250, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 点击态 */
+.record-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(96, 165, 250, 0.04);
+}
+
+/* 左侧内容 */
+.card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+/* 时间：字号调小，去掉过重font‑weight */
+.time-text {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #222222;
+}
+
+.count-text {
+  font-size: 26rpx;
+  color: #444444;
+}
+
+/* 右侧圆形箭头容器 */
+.card-right {
+  width: 64rpx;
+  height: 64rpx;
+  /* background: #dbeafe;  <-- 删掉浅蓝背景 */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.arrow-icon {
+  color: #9bb8db !important;  /* <-- 覆盖成你想要的灰色 */
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 200rpx;
+  gap: 20rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #888888;
+  margin-top: 20rpx;
+}
+.err-num {
+  font-size: 26rpx;
+  color: #e53e3e;
+}
+.empty-sub {
+  font-size: 26rpx;
+  color: #aaaaaa;
+}
+/* 左滑删除按钮 */
+.swipe-delete {
+  height: 100%;
+  width: 140rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e53e3e;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 500;
+  border-radius: 0 24rpx 24rpx 0;
+}

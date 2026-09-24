@@ -1,0 +1,55 @@
+# ===========================================
+# 1. 【必忽略】微信小程序敏感配置文件
+# ===========================================
+# 项目核心配置（含 AppID，泄露会导致他人篡改你的小程序）
+project.config.json
+project.private.config.json
+
+# 本地开发环境生成的临时配置
+project.session.json
+project.private.session.json
+
+# ===========================================
+# 2. 【必忽略】构建产物与缓存目录
+# ===========================================
+# 微信开发者工具生成的编译文件
+miniprogram_npm/
+miniprogram_dev/
+miniprogram_prod/
+unpackage/
+
+# 云开发本地模拟目录
+cloudfunctions/
+cloudlib/
+
+# ===========================================
+# 3. 【必忽略】依赖与临时文件
+# ===========================================
+# Node.js 依赖（通过 package.json 重建即可）
+node_modules/
+
+# IDE 配置（团队成员应使用个人配置）
+.idea/
+.vscode/
+*.sublime-workspace
+
+# 系统隐藏文件
+.DS_Store
+Thumbs.db
+*.swp
+
+# 日志与临时文件
+*.log
+*.tmp
+*.pid
+
+# ===========================================
+# 4. 【可选忽略】根据项目实际技术栈补充
+# ===========================================
+# 若使用 TypeScript
+dist/
+*.js.map
+
+
+# 若包含后端代码（如云函数）
+cloudfunctions/**/node_modules/
