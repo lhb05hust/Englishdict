@@ -44,7 +44,8 @@ Page({
     skippedCount: 0,
     keyboardHeight: 0,
 
-    showAdd: false
+    showAdd: false,
+    showSettings: false    // 听写规则折叠状态：默认收起
   },
 
   onLoad(options) {
@@ -81,6 +82,11 @@ Page({
     if (this.data.showAdd) {
       this.onAddNew();
     }
+  },
+
+  // 切换听写规则折叠面板
+  toggleSettings() {
+    this.setData({ showSettings: !this.data.showSettings });
   },
 
   // 1. 删除词语

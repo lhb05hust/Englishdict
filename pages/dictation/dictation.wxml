@@ -43,9 +43,17 @@
     </view>
   </view>
 
+  <!-- 听写规则：折叠面板 -->
   <view class="section">
-    <view class="card-title">听写规则</view>
-    <van-cell-group border="{{true}}">
+    <view class="settings-header" bindtap="toggleSettings" hover-class="settings-hover">
+      <view class="settings-header-left">
+        <text class="card-title">听写规则</text>
+        <text class="settings-summary">{{order === 'sequential' ? '顺序' : '随机'}} · {{times}}遍 · {{interval === 'custom' ? customSeconds : interval}}秒 · {{takeCount}}个</text>
+      </view>
+      <text class="settings-arrow {{showSettings ? 'expanded' : ''}}">⌄</text>
+    </view>
+
+    <van-cell-group border="{{true}}" wx:if="{{showSettings}}">
       <!-- 报读顺序 -->
       <van-cell
         border="{{true}}"
