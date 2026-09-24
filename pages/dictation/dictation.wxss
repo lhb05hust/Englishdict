@@ -278,7 +278,7 @@ page {
 .settings-header-left {
   display: flex;
   align-items: baseline;
-  gap: 16rpx;
+  gap: 36rpx;
   flex: 1;
   min-width: 0;
 }
@@ -293,8 +293,8 @@ page {
 }
 
 .settings-summary {
-  font-size: 24rpx;
-  color: #888888;
+  font-size: 26rpx;
+  color: #555555;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -303,7 +303,7 @@ page {
 }
 
 .settings-arrow {
-  font-size: 32rpx;
+  font-size: 40rpx;
   color: #999999;
   flex-shrink: 0;
   margin-left: 16rpx;
