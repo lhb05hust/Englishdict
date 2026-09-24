@@ -9,7 +9,6 @@ page {
   box-sizing: border-box;
 }
 
-/* 底部留白占位，撑出可滚动区域，避免被 fixed footer 遮挡 */
 .footer-spacer {
   height: calc(240rpx + env(safe-area-inset-bottom));
   width: 100%;
@@ -37,7 +36,6 @@ page {
   flex-shrink: 0;
 }
 
-/* 提示行样式 */
 .tips-row {
   display: flex;
   justify-content: space-between;
@@ -51,7 +49,7 @@ page {
   flex-shrink: 1;
 }
 
-/* 网格布局核心 */
+/* 网格布局 */
 .grid-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -63,135 +61,102 @@ page {
   transition: all 0.25s ease;
 }
 
-.grid-item.dragging {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-/* 卡片容器，统一圆角+统一阴影，加最小高度保证同行对齐 */
+/* 卡片容器 */
 .card-wrapper {
   position: relative;
   background: #ffffff;
   border-radius: 24rpx;
   box-shadow: 0 3rpx 14rpx rgba(96, 165, 250, 0.08);
   overflow: hidden;
-  min-height: 240rpx;
+  min-height: 160rpx;
   display: flex;
   flex-direction: column;
 }
 
-/* 拖拽图标缩小，减少与英文单词冲突 */
-.movable-handle {
+/* 右上角删除叉 */
+.delete-handle {
   position: absolute;
   top: 0;
   right: 0;
   z-index: 10;
-  width: 52rpx;
-  height: 52rpx;
+  width: 40rpx;
+  height: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e0f2fe;
+  background: #faebeb;
   border-radius: 50%;
-  margin: 10rpx;
+  margin: 6rpx;
 }
-
-.drag-icon {
-  font-size: 26rpx;
-  color: #60a5fa;
+.delete-icon {
+  font-size: 28rpx;
+  color: #b56d6d;
   line-height: 1;
+  font-weight: 300;
+  margin-bottom: 2rpx;
+  margin-left: 2rpx;
+}
+.delete-handle:active {
+  opacity: 0.7;
 }
 
 /* 卡片内容 */
 .card {
-  padding: 10rpx 20rpx 20rpx 20rpx;
+  padding: 24rpx 20rpx;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   box-sizing: border-box;
   min-height: 0;
+  gap: 10rpx;
 }
 
-/* card-top 右侧给拖拽图标留位置，防止长单词被盖住 */
+/* card-top：序号 + 英文 */
 .card-top {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 8rpx;
-  margin-left: 4rpx;
-  padding-right: 68rpx;
-  min-height: 0;
+  align-items: baseline;
+  padding-right: 56rpx;
+  gap: 12rpx;
 }
 
 .index-num {
   font-size: 26rpx;
-  color: #888888;
-  margin-right: 16rpx;
+  color: #999999;
   flex-shrink: 0;
-  line-height: 1.5;
+  line-height: 1.3;
 }
 
-/* 英文单词：字号略小、允许换行、最多 2 行，避免撑破卡片 */
 .word-text {
-  font-size: 34rpx;
+  font-size: 36rpx;
   font-weight: 600;
   color: #222222;
   flex: 1;
   min-width: 0;
-  line-height: 1.25;
+  line-height: 1.3;
   word-break: break-word;
   overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
 }
 .word-text:active {
   opacity: 0.65;
 }
 
-/* 中文释义区 */
+/* 中文释义 */
 .cn-row {
-  margin: 0 4rpx 16rpx 4rpx;
-  padding-top: 4rpx;
-  min-height: 34rpx;
+  padding-left: 36rpx;
 }
 .cn-text {
-  font-size: 24rpx;
-  color: #666666;
-  line-height: 1.35;
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.4;
   word-break: break-word;
   overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
 }
 .cn-text:active {
   opacity: 0.65;
 }
 
-/* 删除按钮 */
-.delete-btn {
-  width: 50%;
-  height: 42rpx;
-  text-align: center;
-  line-height: 42rpx;
-  font-size: 24rpx;
-  background-color: #faebeb;
-  color: #b56d6d;
-  border-radius: 30rpx;
-  padding: 0;
-  margin: 0;
-  border: none;
-  box-sizing: border-box;
-}
-
-.delete-btn::after {
-  border: none;
-}
-
-/* 新增卡片样式：和普通卡片保持同样最小高度 */
+/* 新增卡片 */
 .add-card {
   background-color: #ffffff;
   border: 2rpx dashed #c5d8f0;
@@ -199,7 +164,7 @@ page {
   justify-content: center;
   align-items: center;
   box-shadow: none;
-  min-height: 240rpx;
+  min-height: 160rpx;
   box-sizing: border-box;
 }
 .plus-icon {
@@ -214,20 +179,6 @@ page {
 .add-placeholder {
   font-size: 28rpx;
   color: #666666;
-}
-
-/* 幽灵卡片 */
-.ghost-card {
-  position: fixed;
-  z-index: 999;
-  pointer-events: none;
-}
-.ghost-card .card-wrapper {
-  box-shadow: 0 16rpx 48rpx rgba(96, 165, 250, 0.22);
-  transform: scale(1.06);
-}
-.ghost-card .index-num {
-  color: #60a5fa;
 }
 
 /* 底部固定按钮 */
@@ -293,7 +244,7 @@ page {
   transform: scale(0.98);
 }
 
-/* 听写规则模块 */
+/* 听写规则 */
 .section {
   margin-top: 30rpx;
   background: #ffffff;
@@ -304,7 +255,6 @@ page {
   box-sizing: border-box;
 }
 
-/* 强制 van-cell-group 撑满 section，避免被内部边距挤窄 */
 .section van-cell-group {
   display: block;
   width: 100%;
@@ -425,7 +375,7 @@ page {
   font-weight: 500;
 }
 
-/* ============ 智能批量添加弹窗 ============ */
+/* 弹窗 */
 .modal-mask {
   position: fixed;
   top: 0;

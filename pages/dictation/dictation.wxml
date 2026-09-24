@@ -7,26 +7,20 @@
   <!-- 提示语 -->
   <view class="tips-row">
     <text class="tip-text">点击单词或释义即可修改</text>
-    <text class="tip-text">拖右上角可排序</text>
+    <text class="tip-text">点右上角 × 可删除</text>
   </view>
 
   <!-- 词语列表区域 (Grid布局) -->
   <view class="grid-container">
     <view 
-      class="grid-item {{draggingId === item.wordId ? 'dragging' : ''}}"
+      class="grid-item"
       wx:for="{{wordList}}"
       wx:key="wordId"
-      data-id="{{item.wordId}}"
     >
       <view class="card-wrapper">
-        <view 
-          class="movable-handle" 
-          catchtouchstart="onDragStart" 
-          catchtouchmove="onDragMove" 
-          catchtouchend="onDragEnd"
-          data-index="{{index}}"
-        >
-          <text class="drag-icon">☰</text>
+        <!-- 右上角删除叉 -->
+        <view class="delete-handle" catchtap="onDelete" data-index="{{index}}">
+          <text class="delete-icon">×</text>
         </view>
 
         <!-- 卡片主体 -->
@@ -38,40 +32,15 @@
           <view class="cn-row" bindtap="onEditCn" data-index="{{index}}">
             <text class="cn-text">{{item.cn || '点击添加释义'}}</text>
           </view>
-          <view class="delete-btn" hover-class="btn-hover" bindtap="onDelete" data-index="{{index}}">删除
-          </view>
         </view>
       </view>
     </view>  
+
     <!-- 新增卡片 (占位符) -->
     <view class="card add-card" bindtap="onAddNew">
       <text class="plus-icon">+</text>
       <text class="add-placeholder">批量新增</text>
     </view>
-  </view>
-
-  <!-- 幽灵卡片也要加序号 -->
-  <view 
-    class="ghost-card" 
-    wx:if="{{isDragging}}"
-    style="left: {{ghostX}}px; top: {{ghostY}}px; width: {{ghostW}}px; height: {{ghostH}}px;"
-  >
-    <view class="card-wrapper">
-      <view class="movable-handle">
-        <text class="drag-icon">☰</text>
-      </view>
-
-      <!-- 卡片主体 -->
-      <view class="card">
-        <view class="card-top">
-          <text class="index-num">{{ghostIndex + 1}}</text>
-          <text class="word-text">{{ghostItem.text}}</text>
-        </view>
-        <view class="cn-row">
-          <text class="cn-text">{{ghostItem.cn || ''}}</text>
-        </view>
-      </view>
-    </view>  
   </view>
 
   <view class="section">
@@ -186,14 +155,12 @@
         title-class="hide-default-title"
       >
         <view slot="title" class="setting-block">
-          <!-- 标题与数值左右对齐 -->
           <view class="take-count-header">
             <text class="setting-label" style="margin-bottom: 0;">听写数量</text>
             <text class="take-count-num">{{takeCount}} 个</text>
           </view>
           <view class="cell-subtitle">默认全部听写，可拖动减少数量</view>
           
-          <!-- 优化后的滑块 -->
           <view class="slider-wrapper">
             <slider
               min="{{1}}"
@@ -205,7 +172,6 @@
               bindchange="onTakeCountChange"
               bindchanging="onTakeCountChanging"
             />
-            <!-- 左右标注 -->
             <view class="slider-labels">
               <text>1个</text>
               <text>全部 {{totalWords}}个</text>
@@ -215,6 +181,7 @@
       </van-cell>
     </van-cell-group>
   </view>
+
   <!-- 底部固定按钮 -->
   <view class="footer">
     <button class="confirm-btn" bindtap="onConfirm" hover-class="btn-hover">开始听写</button>
@@ -224,11 +191,8 @@
   <view class="modal-mask" style="bottom: {{keyboardHeight}}px;" wx:if="{{showAddModal}}" bindtap="onCloseAddModal">
     <view class="modal-content" catchtap="noop">
       <view class="modal-header">
-        <!-- 左：粘贴 -->
         <view class="modal-paste-btn" bindtap="onPasteFromClipboard" hover-class="btn-hover">粘贴</view>
-        <!-- 中：标题 -->
         <text class="modal-title">添加单词</text>
-        <!-- 右：清空（有内容时才显示） -->
         <view class="modal-clear-btn" wx:if="{{addInput.length > 0}}" bindtap="onClearInput">清空</view>
       </view>
       <textarea
@@ -243,7 +207,6 @@
         bindfocus="onTextareaFocus"
         bindblur="onTextareaBlur"
       ></textarea>
-      <!-- 字数计数器 -->
       <view class="char-counter-row">
         <text class="char-counter {{addInput.length >= 140 ? 'char-counter-warn' : ''}}">{{addInput.length}}/150</text>
       </view>
@@ -264,6 +227,5 @@
     </view>
   </view>
 
-  <!-- 底部留白占位，避免内容被 fixed footer 遮挡 -->
   <view class="footer-spacer"></view>
 </view>
