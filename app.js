@@ -6,8 +6,8 @@ App({
     // 本地调试填局域网IP，上线替换备案HTTPS域名
     //baseUrl: "http://47.119.191.99:8080",
     //baseUrl: "https://api.jhwin.cn",
-    //baseUrl: "http://192.168.1.7:8080",
-    baseUrl: "http://172.20.10.2:8080",
+    baseUrl: "http://192.168.1.16:8080",
+    //baseUrl: "http://172.20.10.2:8080",
     
     tempImagePath: null,
     dictConfig: null,

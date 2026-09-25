@@ -1,2 +1,100 @@
-<!--pages/textbook/textbook.wxml-->
-<text>pages/textbook/textbook.wxml</text>
+<view class="container">
+  <view class="header">
+    <text class="title">{{bookLabel || '单词听写'}}</text>
+    <view class="switch-btn" bindtap="openBookModal" hover-class="btn-hover">
+      换教材 <text class="switch-arrow">›</text>
+    </view>
+  </view>
+
+  <view class="empty-tip" wx:if="{{units.length === 0}}">
+    请先选择教材
+  </view>
+
+  <block wx:else>
+    <view class="lesson-block" wx:for="{{units}}" wx:key="title" wx:for-item="unit" wx:for-index="uIdx">
+
+      <!-- 单元头：整块可点全选/取消 -->
+      <view class="lesson-header {{unit._selected ? 'lesson-header-active' : ''}}"
+            data-index="{{uIdx}}"
+            bindtap="onToggleUnit"
+            hover-class="lesson-header-hover"
+            hover-start-time="0">
+        <view class="lesson-title-left">
+          <text class="lesson-name">{{unit.title}}</text>
+          <text class="lesson-count">{{unit.words.length}} 个词</text>
+        </view>
+        <view class="checkbox-hit">
+          <view class="checkbox {{unit._selected ? 'checked' : ''}}">
+            <text class="check-icon" wx:if="{{unit._selected}}">✓</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="chip-list">
+        <view class="chip {{unit._selected ? 'chip-active' : ''}}"
+              wx:for="{{unit.words}}" wx:key="en" wx:for-item="w">
+          <text class="chip-text">{{w.en}}</text>
+          <text class="chip-pinyin">{{w.cn}}</text>
+        </view>
+      </view>
+
+    </view>
+  </block>
+
+  <view class="footer" wx:if="{{units.length > 0}}">
+    <view class="footer-left">
+      <text class="footer-count">总共 {{selectedCount}} 个词</text>
+      <view class="clear-btn {{selectedCount > 0 ? '' : 'clear-btn-disabled'}}"
+            bindtap="onClearSelection"
+            hover-class="{{selectedCount > 0 ? 'btn-hover' : ''}}">
+        清空
+      </view>
+    </view>
+    <view class="confirm-btn {{selectedCount > 0 ? '' : 'disabled'}}"
+          bindtap="onStartDictation"
+          hover-class="{{selectedCount > 0 ? 'btn-hover' : ''}}">
+      开始听写
+    </view>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showBookModal}}" bindtap="onCloseBookModal">
+    <view class="modal-content" catchtap="noop">
+      <view class="modal-header">
+        <text class="modal-title">请选择教材</text>
+      </view>
+
+      <view class="book-body">
+        <text class="group-label">年级</text>
+        <view class="grade-grid">
+          <view wx:for="{{grades}}" wx:key="value"
+                class="grade-btn {{selectedGrade === item.value ? 'active' : ''}}"
+                data-value="{{item.value}}"
+                bindtap="onGradeSelect"
+                hover-class="btn-hover">{{item.label}}</view>
+        </view>
+
+        <text class="group-label group-label-term">册次</text>
+        <view class="term-row">
+          <view class="term-btn {{selectedTerm === 1 ? 'active' : ''}}"
+                data-value="1" bindtap="onTermSelect" hover-class="btn-hover">上册</view>
+          <view class="term-btn {{selectedTerm === 2 ? 'active' : ''}}"
+                data-value="2" bindtap="onTermSelect" hover-class="btn-hover">下册</view>
+        </view>
+
+        <text class="group-label group-label-term">版本</text>
+        <view class="ver-grid">
+          <view wx:for="{{versions}}" wx:key="value"
+                class="ver-btn {{selectedVer === item.value ? 'active' : ''}}"
+                data-value="{{item.value}}"
+                bindtap="onVerSelect"
+                hover-class="btn-hover">{{item.label}}</view>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <view class="modal-btn modal-btn-confirm" bindtap="onBookConfirm" hover-class="btn-hover">确定</view>
+      </view>
+    </view>
+  </view>
+  <view class="footer-spacer"></view>
+</view>

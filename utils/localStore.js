@@ -5,7 +5,9 @@ const stg_key = {
   words_book: "words_book",       // 全局生词池
   errs_book: "errs_book",         // 错误词
   dict_setting: "dict_setting",       // 听写语速/循环设置
-  selected_bid: "selected_bid"        // 上次选中的课本 id
+  selected_bid: "selected_bid",       // 上次选中的课本 id
+  en_selected_ver: "en_selected_ver", // 【英语版】上次选中的教材版本
+  en_selected_bid: "en_selected_bid"  // 【英语版】上次选中的册号
 };
 
 const MAX_RECORDS = 100;
@@ -372,6 +374,89 @@ function clearSelectedBid() {
   }
 }
 
+////////////【英语版】教材选择记忆////////////////////
+/**
+ * 保存上次选中的教材版本
+ * @param {string} ver - 版本标识，如 'rjb_pep'
+ */
+function saveEnSelectedVer(ver) {
+  if (!ver) return false;
+  try {
+    wx.setStorageSync(stg_key.en_selected_ver, ver);
+    return true;
+  } catch (e) {
+    console.warn('保存选册 ver 失败', e);
+    return false;
+  }
+}
+
+/**
+ * 读取上次选中的教材版本
+ * @returns {string} ver 或 ''
+ */
+function getEnSelectedVer() {
+  try {
+    return wx.getStorageSync(stg_key.en_selected_ver) || '';
+  } catch (e) {
+    console.warn('读取选册 ver 失败', e);
+    return '';
+  }
+}
+
+/**
+ * 清除选册版本记忆
+ */
+function clearEnSelectedVer() {
+  try {
+    wx.removeStorageSync(stg_key.en_selected_ver);
+    return true;
+  } catch (e) {
+    console.warn('清除选册 ver 失败', e);
+    return false;
+  }
+}
+
+/**
+ * 保存上次选中的英语册号
+ * @param {string} bid - 册号，如 'b31' / 'b101'
+ */
+function saveEnSelectedBid(bid) {
+  if (!bid) return false;
+  try {
+    wx.setStorageSync(stg_key.en_selected_bid, bid);
+    return true;
+  } catch (e) {
+    console.warn('保存英语选册 bid 失败', e);
+    return false;
+  }
+}
+
+/**
+ * 读取上次选中的英语册号
+ * @returns {string} bid 或 ''
+ */
+function getEnSelectedBid() {
+  try {
+    return wx.getStorageSync(stg_key.en_selected_bid) || '';
+  } catch (e) {
+    console.warn('读取英语选册 bid 失败', e);
+    return '';
+  }
+}
+
+/**
+ * 清除英语选册记忆
+ */
+function clearEnSelectedBid() {
+  try {
+    wx.removeStorageSync(stg_key.en_selected_bid);
+    return true;
+  } catch (e) {
+    console.warn('清除英语选册 bid 失败', e);
+    return false;
+  }
+}
+
 module.exports = {
   addWordsBatch,
   getAllWords,
@@ -389,4 +474,11 @@ module.exports = {
   saveSelectedBid,
   getSelectedBid,
   clearSelectedBid,
+  // 【英语版】教材选择记忆
+  saveEnSelectedVer,
+  getEnSelectedVer,
+  clearEnSelectedVer,
+  saveEnSelectedBid,
+  getEnSelectedBid,
+  clearEnSelectedBid,
 }
