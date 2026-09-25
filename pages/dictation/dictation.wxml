@@ -1,6 +1,6 @@
 <view class="container">
   <view class="header">
-    <text class="title">确认单词</text>
+    <text class="title">准备听写</text>
     <text class="count">共 {{wordList.length}} 个词</text>
   </view>
 

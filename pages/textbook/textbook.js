@@ -312,18 +312,18 @@ Page({
     });
   },
 
+  // ============ 开始听写 → 改为跳转到"准备听写"页 ============
   onStartDictation() {
     const { selectedCount, units } = this.data;
-
+  
     if (selectedCount === 0) {
       wx.showToast({ title: '请先选择单元', icon: 'none' });
       return;
     }
-
+  
     const seen = new Set();
     const wordList = [];
-    let idx = 0;
-
+  
     units.forEach((u) => {
       if (!u._selected) return;
       (u.words || []).forEach((w) => {
@@ -333,23 +333,21 @@ Page({
         const key = text.toLowerCase();
         if (seen.has(key)) return;
         seen.add(key);
-        wordList.push({
-          wordId: Date.now() + (idx++),
-          text,
-          cn,
-        });
+        wordList.push({ en: text, cn });
       });
     });
-
-    getApp().globalData.dictConfig = {
-      wordList,
-      readOrder: 'sequential',
-      readTimes: 2,
-      gap: 5,
-      takeCount: wordList.length,
-    };
-
-    wx.navigateTo({ url: '/pages/play/play' });
+  
+    if (wordList.length === 0) {
+      wx.showToast({ title: '请先选择单元', icon: 'none' });
+      return;
+    }
+  
+    // 用全局变量传词表，不走 URL
+    getApp().globalData.tempWordList = wordList;
+  
+    wx.navigateTo({
+      url: '/pages/dictation/dictation'
+    });
   },
 
   noop() {},

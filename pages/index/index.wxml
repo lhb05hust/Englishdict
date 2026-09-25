@@ -40,20 +40,20 @@
 
     <!-- 两栏并排小卡片 -->
     <view class="func-row">
+      <view class="func-card col-card" bindtap="goCustomDict" hover-class="card-hover">
+        <view class="col-icon">✍️</view>
+        <view class="col-text">
+          <view class="col-title">批量录入单词</view>
+          <view class="col-desc">输入或粘贴多个</view>
+        </view>
+        <view class="col-arrow">></view>
+      </view>
       <!-- 上传照片 -->
       <view class="func-card col-card" bindtap="goUploadPhoto" hover-class="card-hover">
         <view class="col-icon">🖼️</view>
         <view class="col-text">
           <view class="col-title">传图识单词</view>
           <view class="col-desc">从相册选图</view>
-        </view>
-        <view class="col-arrow">></view>
-      </view>
-      <view class="func-card col-card" bindtap="goCustomDict" hover-class="card-hover">
-        <view class="col-icon">✍️</view>
-        <view class="col-text">
-          <view class="col-title">批量录入单词</view>
-          <view class="col-desc">输入或粘贴多个</view>
         </view>
         <view class="col-arrow">></view>
       </view>

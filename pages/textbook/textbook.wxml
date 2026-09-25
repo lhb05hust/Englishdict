@@ -53,7 +53,7 @@
     <view class="confirm-btn {{selectedCount > 0 ? '' : 'disabled'}}"
           bindtap="onStartDictation"
           hover-class="{{selectedCount > 0 ? 'btn-hover' : ''}}">
-      开始听写
+      准备听写
     </view>
   </view>
 

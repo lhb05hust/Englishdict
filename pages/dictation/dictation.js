@@ -50,15 +50,24 @@ Page({
 
   onLoad(options) {
     this.setData({ showAdd: options.showAdd || false });
-
-    let ocrData = null;
-    try {
-      ocrData = JSON.parse(options.words || 'null');
-    } catch (e) {
-      ocrData = null;
+  
+    // 优先读全局变量（从教材页传过来的词表）
+    let rawList = [];
+    const app = getApp();
+    if (app.globalData.tempWordList && app.globalData.tempWordList.length > 0) {
+      rawList = app.globalData.tempWordList;
+      app.globalData.tempWordList = null;  // 用完立即清空
+    } else {
+      // 兼容原有 URL 传参路径（OCR / 手动 / 错题本等）
+      let ocrData = null;
+      try {
+        ocrData = JSON.parse(options.words || 'null');
+      } catch (e) {
+        ocrData = null;
+      }
+      rawList = extractWordList(ocrData);
     }
-
-    const rawList = extractWordList(ocrData);
+  
     const baseTime = Date.now();
     const initList = rawList
       .map((item, idx) => {
@@ -70,7 +79,7 @@ Page({
         };
       })
       .filter((item) => item.text);
-
+  
     this.setData({
       wordList: initList,
       takeCount: initList.length,

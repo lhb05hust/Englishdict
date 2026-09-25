@@ -20,7 +20,7 @@
   <!-- 查看词语按钮 -->
   <view class="assist">
     <view class="btn-assist" hover-class="btn-hover" bindtap="toggleShowCn">看释义</view>
-    <view class="btn-assist" hover-class="btn-hover" bindtap="toggleShowWord">{{ showWord ? '隐藏' : '看词' }}</view>
+    <view class="btn-assist" hover-class="btn-hover" bindtap="toggleShowWord">{{ showWord ? '隐藏' : '看单词' }}</view>
     <view class="btn-assist" hover-class="btn-hover" bindtap="add2ErrBook">加错题</view>
   </view>
 
