@@ -1,51 +1,93 @@
 const lStore = require("../../utils/localStore");
 const bookApi = require("../../utils/bookApi");
 
-// 支持的教材版本（value 必须与后端 enbooks/ 下的目录名一致）
+// ============ 静态配置 ============
+// 版本列表：label 是用户看到的，ver 是后端文件夹名
+// 未来某个版本没数据，注释掉对应行即可
 const VERSIONS = [
-  { label: '人教版(PEP)', value: 'rjb_pep' },
-  { label: '外研版',       value: 'wyb' },
-  { label: '译林版',       value: 'ylb' },
-  { label: '北师大版',     value: 'bsdb' },
-  { label: '沪教版',       value: 'hjb' },
-  { label: '教科版',       value: 'jkb' },
+  { label: '人教版',   ver: 'rjb'  },
+  { label: '译林版',   ver: 'ylb'  },
+  { label: '沪教版',   ver: 'hjb'  },
+  { label: '外研版',   ver: 'wyb'  },
+  { label: '教科版',   ver: 'jkb'  },
+  { label: '北师大版', ver: 'bsdb' },
 ];
 
-// 默认版本
-const DEFAULT_VER = 'rjb_pep';
+// 年级列表：小学 3-6 + 初中 7-9 + 高中
+const GRADES = [
+  { key: 'p3', label: '三年级', stage: 'primary', gradeNum: 3 },
+  { key: 'p4', label: '四年级', stage: 'primary', gradeNum: 4 },
+  { key: 'p5', label: '五年级', stage: 'primary', gradeNum: 5 },
+  { key: 'p6', label: '六年级', stage: 'primary', gradeNum: 6 },
+  { key: 'j7', label: '七年级', stage: 'junior',  gradeNum: 7 },
+  { key: 'j8', label: '八年级', stage: 'junior',  gradeNum: 8 },
+  { key: 'j9', label: '九年级', stage: 'junior',  gradeNum: 9 },
+  { key: 'senior', label: '高中', stage: 'senior' },
+];
+
+// 高中固定 7 册
+const SENIOR_BOOKS = [
+  { bid: 'bx1', label: '必修1' },
+  { bid: 'bx2', label: '必修2' },
+  { bid: 'bx3', label: '必修3' },
+  { bid: 'xb1', label: '选必1' },
+  { bid: 'xb2', label: '选必2' },
+  { bid: 'xb3', label: '选必3' },
+  { bid: 'xb4', label: '选必4' },
+];
 
 /**
- * 从 bid 解析年级和册次
+ * 根据年级生成册次列表
+ * 小学/初中 → 上册、下册
+ * 高中 → 必修1~3 + 选必1~4
  */
-function parseBid(bid) {
-  if (!bid || bid[0] !== 'b' || bid.length < 3) return { grade: 0, term: 0 };
-  const grade = parseInt(bid.slice(1, -1), 10) || 0;
-  const term = parseInt(bid.slice(-1), 10) || 0;
-  return { grade, term };
+function getBooksForGrade(gradeKey) {
+  const grade = GRADES.find(g => g.key === gradeKey);
+  if (!grade) return [];
+  if (grade.stage === 'senior') {
+    return SENIOR_BOOKS;
+  }
+  return [
+    { bid: `b${grade.gradeNum}1`, label: '上册' },
+    { bid: `b${grade.gradeNum}2`, label: '下册' },
+  ];
+}
+
+/**
+ * 组装顶部显示文案：版本 · 年级 + 册次
+ */
+function buildBookLabel(gradeKey, ver, bid) {
+  const grade = GRADES.find(g => g.key === gradeKey);
+  const version = VERSIONS.find(v => v.ver === ver);
+  const gradeLabel = grade ? grade.label : '';
+  const verLabel = version ? version.label : ver;
+
+  let bookLabel = '';
+  if (grade && grade.stage === 'senior') {
+    const sb = SENIOR_BOOKS.find(b => b.bid === bid);
+    bookLabel = sb ? sb.label : '';
+  } else {
+    const term = bid.slice(-1);
+    bookLabel = term === '1' ? '上册' : '下册';
+  }
+  return `${verLabel} · ${gradeLabel}${bookLabel}`;
 }
 
 Page({
   data: {
     showBookModal: false,
 
+    // 静态配置
     versions: VERSIONS,
-    selectedVer: DEFAULT_VER,
+    grades: GRADES,
+    books: [],
 
-    grades: [
-      { label: '三年级', value: 3 },
-      { label: '四年级', value: 4 },
-      { label: '五年级', value: 5 },
-      { label: '六年级', value: 6 },
-      { label: '七年级', value: 7 },
-      { label: '八年级', value: 8 },
-      { label: '九年级', value: 9 },
-      { label: '高一',   value: 10 },
-      { label: '高二',   value: 11 },
-      { label: '高三',   value: 12 },
-    ],
-    selectedGrade: 0,
-    selectedTerm: 0,
+    // 用户选择
+    selectedGrade: '',
+    selectedVer: '',
+    selectedBid: '',
 
+    // 教材数据
     bookLabel: '',
     units: [],
     selectedCount: 0,
@@ -56,43 +98,23 @@ Page({
   _destroyed: false,
 
   onLoad() {
-    const app = getApp();
-
-    let ver = app.globalData.enSelectedVer || '';
-    let bid = app.globalData.enSelectedBid || '';
-    let fromMemory = false;
-
-    if (!ver || !bid) {
-      const savedVer = lStore.getEnSelectedVer ? lStore.getEnSelectedVer() : '';
-      const savedBid = lStore.getEnSelectedBid ? lStore.getEnSelectedBid() : '';
-      if (savedVer && savedBid) {
-        ver = savedVer;
-        bid = savedBid;
-        fromMemory = true;
-
-        app.globalData.enSelectedVer = ver;
-        app.globalData.enSelectedBid = bid;
-        const parsed = parseBid(bid);
-        app.globalData.enSelectedGrade = parsed.grade;
-        app.globalData.enSelectedTerm = parsed.term;
-      }
-    }
-
-    if (ver && bid) {
-      this._loadingFromMemory = fromMemory;
-      const parsed = parseBid(bid);
+    const saved = lStore.getEnSelected();
+    if (saved.grade && saved.ver && saved.bid) {
+      // 恢复上次选择
+      this._loadingFromMemory = true;
       this.setData({
-        selectedVer: ver,
-        selectedGrade: parsed.grade,
-        selectedTerm: parsed.term,
+        selectedGrade: saved.grade,
+        selectedVer: saved.ver,
+        selectedBid: saved.bid,
+        books: getBooksForGrade(saved.grade),
       });
-      this.getBookUnits(ver, bid);
+      this.getBookUnits(saved.ver, saved.bid);
     }
   },
 
   onReady() {
-    const app = getApp();
-    if (!app.globalData.enSelectedVer || !app.globalData.enSelectedBid) {
+    // 没有记忆 → 打开选择弹窗
+    if (!this.data.selectedBid) {
       this.openBookModal();
     }
   },
@@ -106,64 +128,57 @@ Page({
     wx.hideLoading();
   },
 
+  // ============ 弹窗 ============
   openBookModal() {
-    const app = getApp();
-    this.setData({
-      showBookModal: true,
-      selectedVer: this.data.selectedVer || app.globalData.enSelectedVer || DEFAULT_VER,
-      selectedGrade: this.data.selectedGrade || app.globalData.enSelectedGrade || 0,
-      selectedTerm: this.data.selectedTerm || app.globalData.enSelectedTerm || 0,
-    });
+    this.setData({ showBookModal: true });
   },
 
   onCloseBookModal() {
     this.setData({ showBookModal: false });
   },
 
-  onVerSelect(e) {
-    this.setData({ selectedVer: e.currentTarget.dataset.value });
-  },
-
+  // 选年级 → 重建册次列表，清空后续选择
   onGradeSelect(e) {
-    this.setData({ selectedGrade: Number(e.currentTarget.dataset.value) });
+    const key = e.currentTarget.dataset.key;
+    this.setData({
+      selectedGrade: key,
+      selectedBid: '',
+      books: getBooksForGrade(key),
+    });
   },
 
-  onTermSelect(e) {
-    this.setData({ selectedTerm: Number(e.currentTarget.dataset.value) });
+  // 选版本 → 清空册次
+  onVerSelect(e) {
+    const ver = e.currentTarget.dataset.ver;
+    this.setData({
+      selectedVer: ver,
+      selectedBid: '',
+    });
+  },
+
+  // 选册次
+  onBookSelect(e) {
+    const bid = e.currentTarget.dataset.bid;
+    this.setData({ selectedBid: bid });
   },
 
   onBookConfirm() {
-    const { selectedVer, selectedGrade, selectedTerm } = this.data;
+    const { selectedGrade, selectedVer, selectedBid } = this.data;
 
-    if (!selectedGrade) {
-      wx.showToast({ title: '请选择年级', icon: 'none' });
-      return;
-    }
-    if (!selectedTerm) {
-      wx.showToast({ title: '请选择册次', icon: 'none' });
-      return;
-    }
-    if (!selectedVer) {
-      wx.showToast({ title: '请选择版本', icon: 'none' });
-      return;
-    }
+    if (!selectedGrade) { wx.showToast({ title: '请选择年级', icon: 'none' }); return; }
+    if (!selectedVer)   { wx.showToast({ title: '请选择版本', icon: 'none' }); return; }
+    if (!selectedBid)   { wx.showToast({ title: '请选择册次', icon: 'none' }); return; }
 
-    const bid = `b${selectedGrade}${selectedTerm}`;
-    const app = getApp();
-    app.globalData.enSelectedVer = selectedVer;
-    app.globalData.enSelectedGrade = selectedGrade;
-    app.globalData.enSelectedTerm = selectedTerm;
-    app.globalData.enSelectedBid = bid;
-
-    if (lStore.saveEnSelectedVer) lStore.saveEnSelectedVer(selectedVer);
-    if (lStore.saveEnSelectedBid) lStore.saveEnSelectedBid(bid);
+    // 持久化三字段
+    lStore.saveEnSelected(selectedGrade, selectedVer, selectedBid);
 
     this.setData({ showBookModal: false });
     this._loadingFromMemory = false;
 
-    this.getBookUnits(selectedVer, bid);
+    this.getBookUnits(selectedVer, selectedBid);
   },
 
+  // ============ 加载教材 ============
   getBookUnits(ver, bid) {
     wx.showLoading({ title: '加载中', mask: false });
 
@@ -186,17 +201,13 @@ Page({
         _selected: false,
       }));
 
-      const termText = book.term === 1 ? '上册' : '下册';
-      const verValue = book.version || ver;
-      const verLabel = (VERSIONS.find(v => v.value === verValue) || {}).label || verValue;
+      const { selectedGrade, selectedVer, selectedBid } = this.data;
+      const label = buildBookLabel(selectedGrade, selectedVer, selectedBid);
 
       this.setData({
         units,
-        bookLabel: `${verLabel} · ${book.grade}年级${termText}`,
+        bookLabel: label,
         selectedCount: 0,
-        selectedGrade: book.grade,
-        selectedTerm: book.term,
-        selectedVer: verValue,
       });
 
       this._loadingFromMemory = false;
@@ -222,15 +233,13 @@ Page({
     }
 
     if (this._loadingFromMemory) {
-      if (lStore.clearEnSelectedBid) lStore.clearEnSelectedBid();
-      if (lStore.clearEnSelectedVer) lStore.clearEnSelectedVer();
-
-      const app = getApp();
-      app.globalData.enSelectedVer = '';
-      app.globalData.enSelectedBid = '';
-      app.globalData.enSelectedGrade = 0;
-      app.globalData.enSelectedTerm = 0;
-
+      lStore.clearEnSelected();
+      this.setData({
+        selectedGrade: '',
+        selectedVer: '',
+        selectedBid: '',
+        books: [],
+      });
       this._loadingFromMemory = false;
       wx.showToast({ title: '加载失败，请重新选择', icon: 'none' });
       setTimeout(() => this.openBookModal(), 800);
@@ -250,7 +259,7 @@ Page({
     });
   },
 
-  // ============ 切换某个 Unit 的选中（一次 setData）============
+  // ============ 单元选中 ============
   onToggleUnit(e) {
     const idx = Number(e.currentTarget.dataset.index);
     if (isNaN(idx)) return;
@@ -258,10 +267,8 @@ Page({
     const units = this.data.units;
     if (!units[idx]) return;
 
-    const newVal = !units[idx]._selected;
-
     const newUnits = units.slice();
-    newUnits[idx] = { ...newUnits[idx], _selected: newVal };
+    newUnits[idx] = { ...newUnits[idx], _selected: !units[idx]._selected };
 
     this.setData({
       units: newUnits,
@@ -269,10 +276,8 @@ Page({
     });
   },
 
-  // ============ 计算去重后的总词数（接收 units 参数）============
   computeSelectedCountFrom(units) {
     const seen = new Set();
-
     (units || []).forEach((u) => {
       if (!u._selected) return;
       (u.words || []).forEach((w) => {
@@ -282,13 +287,7 @@ Page({
         }
       });
     });
-
     return seen.size;
-  },
-
-  // 兼容旧调用
-  computeSelectedCount() {
-    return this.computeSelectedCountFrom(this.data.units);
   },
 
   onClearSelection() {
@@ -301,29 +300,24 @@ Page({
       confirmColor: '#e53e3e',
       success: (res) => {
         if (!res.confirm) return;
-
-        const units = this.data.units.map((u) => ({
-          ...u,
-          _selected: false,
-        }));
-
+        const units = this.data.units.map((u) => ({ ...u, _selected: false }));
         this.setData({ units, selectedCount: 0 });
       },
     });
   },
 
-  // ============ 开始听写 → 改为跳转到"准备听写"页 ============
+  // ============ 开始听写 ============
   onStartDictation() {
     const { selectedCount, units } = this.data;
-  
+
     if (selectedCount === 0) {
       wx.showToast({ title: '请先选择单元', icon: 'none' });
       return;
     }
-  
+
     const seen = new Set();
     const wordList = [];
-  
+
     units.forEach((u) => {
       if (!u._selected) return;
       (u.words || []).forEach((w) => {
@@ -336,18 +330,14 @@ Page({
         wordList.push({ en: text, cn });
       });
     });
-  
+
     if (wordList.length === 0) {
       wx.showToast({ title: '请先选择单元', icon: 'none' });
       return;
     }
-  
-    // 用全局变量传词表，不走 URL
+
     getApp().globalData.tempWordList = wordList;
-  
-    wx.navigateTo({
-      url: '/pages/dictation/dictation'
-    });
+    wx.navigateTo({ url: '/pages/dictation/dictation' });
   },
 
   noop() {},

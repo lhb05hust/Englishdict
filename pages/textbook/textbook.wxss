@@ -49,7 +49,6 @@ page {
   box-shadow: 0 3rpx 14rpx rgba(96, 165, 250, 0.08);
 }
 
-/* 单元头：整块可点，激活态浅蓝高亮 */
 .lesson-header {
   display: flex;
   justify-content: space-between;
@@ -64,7 +63,6 @@ page {
   background: #e0f2fe;
 }
 
-/* 按下即高亮，反馈明显 */
 .lesson-header-hover {
   background: #d4e8fc;
 }
@@ -89,8 +87,7 @@ page {
   flex-shrink: 0;
 }
 
-/* ============ checkbox（扩大热区 + 视觉放大）============ */
-/* 外层 hit 容器：把热区从 52rpx 扩到 100rpx，视觉不变 */
+/* ============ checkbox ============ */
 .checkbox-hit {
   padding: 24rpx;
   margin: -24rpx;
@@ -329,6 +326,8 @@ page {
 }
 
 .book-body {
+  flex: 1;
+  max-height: 60vh;
   padding: 4rpx 4rpx 0;
 }
 
@@ -343,10 +342,11 @@ page {
   margin-top: 28rpx;
 }
 
+/* 年级网格：3 列 */
 .grade-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24rpx 24rpx;
+  gap: 24rpx;
   margin-bottom: 8rpx;
 }
 
@@ -372,33 +372,7 @@ page {
   border-color: #60a5fa;
 }
 
-.term-row {
-  display: flex;
-  gap: 32rpx;
-  justify-content: center;
-}
-
-.term-btn {
-  width: 240rpx;
-  height: 66rpx;
-  line-height: 66rpx;
-  text-align: center;
-  background: #e0f2fe;
-  color: #555555;
-  font-size: 28rpx;
-  border-radius: 999rpx;
-  border: 2rpx solid #93c5fd;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-.term-btn.active {
-  background: #bfdbfe;
-  color: #1e3a8a;
-  font-weight: 600;
-  border-color: #60a5fa;
-}
-
+/* 版本网格：2 列 */
 .ver-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -429,6 +403,39 @@ page {
   border-color: #60a5fa;
 }
 
+/* 册次网格：小学/初中 2 列，高中 3 列 */
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx 24rpx;
+}
+
+.book-grid-senior {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.book-btn {
+  height: 66rpx;
+  line-height: 66rpx;
+  text-align: center;
+  background: #e0f2fe;
+  color: #555555;
+  font-size: 28rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #93c5fd;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  padding: 0 8rpx;
+}
+
+.book-btn.active {
+  background: #bfdbfe;
+  color: #1e3a8a;
+  font-weight: 600;
+  border-color: #60a5fa;
+}
+
+/* 弹窗底部 */
 .modal-footer {
   display: flex;
   gap: 20rpx;
@@ -446,15 +453,14 @@ page {
 }
 
 .modal-btn-confirm {
-  margin-top: 50rpx;
   background: #bfdbfe;
   color: #1e3a8a;
   font-weight: 600;
 }
 
-.modal-btn-cancel {
-  background: #f0f7ff;
-  color: #555555;
+.modal-btn-confirm.disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
 }
 
 .footer-spacer {

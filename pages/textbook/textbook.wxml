@@ -13,7 +13,6 @@
   <block wx:else>
     <view class="lesson-block" wx:for="{{units}}" wx:key="title" wx:for-item="unit" wx:for-index="uIdx">
 
-      <!-- 单元头：整块可点全选/取消 -->
       <view class="lesson-header {{unit._selected ? 'lesson-header-active' : ''}}"
             data-index="{{uIdx}}"
             bindtap="onToggleUnit"
@@ -57,44 +56,58 @@
     </view>
   </view>
 
+  <!-- 教材选择弹窗 -->
   <view class="modal-mask" wx:if="{{showBookModal}}" bindtap="onCloseBookModal">
     <view class="modal-content" catchtap="noop">
       <view class="modal-header">
         <text class="modal-title">请选择教材</text>
       </view>
 
-      <view class="book-body">
+      <scroll-view scroll-y class="book-body">
+
+        <!-- 第一层：年级 -->
         <text class="group-label">年级</text>
         <view class="grade-grid">
-          <view wx:for="{{grades}}" wx:key="value"
-                class="grade-btn {{selectedGrade === item.value ? 'active' : ''}}"
-                data-value="{{item.value}}"
+          <view wx:for="{{grades}}" wx:key="key"
+                class="grade-btn {{selectedGrade === item.key ? 'active' : ''}}"
+                data-key="{{item.key}}"
                 bindtap="onGradeSelect"
                 hover-class="btn-hover">{{item.label}}</view>
         </view>
 
-        <text class="group-label group-label-term">册次</text>
-        <view class="term-row">
-          <view class="term-btn {{selectedTerm === 1 ? 'active' : ''}}"
-                data-value="1" bindtap="onTermSelect" hover-class="btn-hover">上册</view>
-          <view class="term-btn {{selectedTerm === 2 ? 'active' : ''}}"
-                data-value="2" bindtap="onTermSelect" hover-class="btn-hover">下册</view>
-        </view>
+        <!-- 第二层：版本（选完年级后出现） -->
+        <block wx:if="{{selectedGrade}}">
+          <text class="group-label group-label-term">版本</text>
+          <view class="ver-grid">
+            <view wx:for="{{versions}}" wx:key="ver"
+                  class="ver-btn {{selectedVer === item.ver ? 'active' : ''}}"
+                  data-ver="{{item.ver}}"
+                  bindtap="onVerSelect"
+                  hover-class="btn-hover">{{item.label}}</view>
+          </view>
+        </block>
 
-        <text class="group-label group-label-term">版本</text>
-        <view class="ver-grid">
-          <view wx:for="{{versions}}" wx:key="value"
-                class="ver-btn {{selectedVer === item.value ? 'active' : ''}}"
-                data-value="{{item.value}}"
-                bindtap="onVerSelect"
-                hover-class="btn-hover">{{item.label}}</view>
-        </view>
-      </view>
+        <!-- 第三层：册次（选完版本后出现） -->
+        <block wx:if="{{selectedVer}}">
+          <text class="group-label group-label-term">册次</text>
+          <view class="book-grid {{selectedGrade === 'senior' ? 'book-grid-senior' : ''}}">
+            <view wx:for="{{books}}" wx:key="bid"
+                  class="book-btn {{selectedBid === item.bid ? 'active' : ''}}"
+                  data-bid="{{item.bid}}"
+                  bindtap="onBookSelect"
+                  hover-class="btn-hover">{{item.label}}</view>
+          </view>
+        </block>
+
+      </scroll-view>
 
       <view class="modal-footer">
-        <view class="modal-btn modal-btn-confirm" bindtap="onBookConfirm" hover-class="btn-hover">确定</view>
+        <view class="modal-btn modal-btn-confirm {{(!selectedGrade || !selectedVer || !selectedBid) ? 'disabled' : ''}}"
+              bindtap="onBookConfirm"
+              hover-class="{{(selectedGrade && selectedVer && selectedBid) ? 'btn-hover' : ''}}">确定</view>
       </view>
     </view>
   </view>
+
   <view class="footer-spacer"></view>
 </view>
