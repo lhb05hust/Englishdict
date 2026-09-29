@@ -60,7 +60,7 @@
   <view class="modal-mask" wx:if="{{showBookModal}}" bindtap="onCloseBookModal">
     <view class="modal-content" catchtap="noop">
       <view class="modal-header">
-        <text class="modal-title">请选择教材</text>
+        <text class="modal-title">请选择教材</text><text wx:if="{{selectedSummary}}" class="modal-summary"> · {{selectedSummary}}</text>
       </view>
 
       <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="book-body">

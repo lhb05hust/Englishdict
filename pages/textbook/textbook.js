@@ -73,6 +73,32 @@ function buildBookLabel(gradeKey, ver, bid) {
   return `${verLabel} · ${gradeLabel}${bookLabel}`;
 }
 
+/**
+ * 弹窗标题尾部追加的提示
+ * 选一层加一层，全选完显示完整三段
+ * 未选任何一层 → 空字符串（尾部不显示）
+ */
+function buildSummary(gradeKey, ver, bid) {
+  const grade = GRADES.find(g => g.key === gradeKey);
+  const version = VERSIONS.find(v => v.ver === ver);
+
+  const parts = [];
+  if (version) parts.push(version.label);
+  if (grade) parts.push(grade.label);
+  if (bid && grade) {
+    let bookLabel = '';
+    if (grade.stage === 'senior') {
+      const sb = SENIOR_BOOKS.find(b => b.bid === bid);
+      bookLabel = sb ? sb.label : '';
+    } else {
+      bookLabel = bid.slice(-1) === '1' ? '上册' : '下册';
+    }
+    if (bookLabel) parts.push(bookLabel);
+  }
+
+  return parts.join(' · ');
+}
+
 Page({
   data: {
     showBookModal: false,
@@ -86,6 +112,9 @@ Page({
     selectedGrade: '',
     selectedVer: '',
     selectedBid: '',
+
+    // 标题尾部提示
+    selectedSummary: '',
 
     // 教材数据
     bookLabel: '',
@@ -107,6 +136,7 @@ Page({
         selectedVer: saved.ver,
         selectedBid: saved.bid,
         books: getBooksForGrade(saved.grade),
+        selectedSummary: buildSummary(saved.grade, saved.ver, saved.bid),
       });
       this.getBookUnits(saved.ver, saved.bid);
     }
@@ -140,26 +170,34 @@ Page({
   // 选年级 → 重建册次列表，清空后续选择
   onGradeSelect(e) {
     const key = e.currentTarget.dataset.key;
+    const selectedVer = this.data.selectedVer;
     this.setData({
       selectedGrade: key,
       selectedBid: '',
       books: getBooksForGrade(key),
+      selectedSummary: buildSummary(key, selectedVer, ''),
     });
   },
 
   // 选版本 → 清空册次
   onVerSelect(e) {
     const ver = e.currentTarget.dataset.ver;
+    const selectedGrade = this.data.selectedGrade;
     this.setData({
       selectedVer: ver,
       selectedBid: '',
+      selectedSummary: buildSummary(selectedGrade, ver, ''),
     });
   },
 
   // 选册次
   onBookSelect(e) {
     const bid = e.currentTarget.dataset.bid;
-    this.setData({ selectedBid: bid });
+    const { selectedGrade, selectedVer } = this.data;
+    this.setData({
+      selectedBid: bid,
+      selectedSummary: buildSummary(selectedGrade, selectedVer, bid),
+    });
   },
 
   onBookConfirm() {
@@ -239,6 +277,7 @@ Page({
         selectedVer: '',
         selectedBid: '',
         books: [],
+        selectedSummary: '',
       });
       this._loadingFromMemory = false;
       wx.showToast({ title: '加载失败，请重新选择', icon: 'none' });
