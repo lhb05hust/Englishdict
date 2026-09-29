@@ -63,10 +63,9 @@
         <text class="modal-title">请选择教材</text>
       </view>
 
-      <scroll-view scroll-y class="book-body">
-
+      <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="book-body">
         <!-- 第一层：年级 -->
-        <text class="group-label">年级</text>
+        <view class="group-label">① 选择年级</view>
         <view class="grade-grid">
           <view wx:for="{{grades}}" wx:key="key"
                 class="grade-btn {{selectedGrade === item.key ? 'active' : ''}}"
@@ -77,7 +76,7 @@
 
         <!-- 第二层：版本（选完年级后出现） -->
         <block wx:if="{{selectedGrade}}">
-          <text class="group-label group-label-term">版本</text>
+          <view class="group-label group-label-term">② 选择版本</view>
           <view class="ver-grid">
             <view wx:for="{{versions}}" wx:key="ver"
                   class="ver-btn {{selectedVer === item.ver ? 'active' : ''}}"
@@ -89,7 +88,7 @@
 
         <!-- 第三层：册次（选完版本后出现） -->
         <block wx:if="{{selectedVer}}">
-          <text class="group-label group-label-term">册次</text>
+          <view class="group-label group-label-term">③ 选择册次</view>
           <view class="book-grid {{selectedGrade === 'senior' ? 'book-grid-senior' : ''}}">
             <view wx:for="{{books}}" wx:key="bid"
                   class="book-btn {{selectedBid === item.bid ? 'active' : ''}}"
