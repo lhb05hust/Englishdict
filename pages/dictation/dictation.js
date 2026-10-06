@@ -30,6 +30,15 @@ Page({
   data: {
     wordList: [],
 
+    isDragging: false,
+    draggingId: null,
+    ghostX: 0,
+    ghostY: 0,
+    ghostW: 0,
+    ghostH: 0,
+    ghostItem: null,
+    ghostIndex: 0,
+
     order: 'sequential',   // 报读顺序：'sequential' | 'random'
     times: 2,              // 报读次数：1 | 2 | 3
     interval: 5,           // 间隔时间：3 | 5 | 8 | 'custom'
@@ -47,6 +56,10 @@ Page({
     showAdd: false,
     showSettings: false    // 听写规则折叠状态：默认收起
   },
+
+  itemRects: [],
+  dragOffsetX: 0,
+  dragOffsetY: 0,
 
   onLoad(options) {
     this.setData({ showAdd: options.showAdd || false });
@@ -88,6 +101,7 @@ Page({
   },
 
   onReady() {
+    this.updateItemRects();
     if (this.data.showAdd) {
       this.onAddNew();
     }
@@ -96,6 +110,107 @@ Page({
   // 切换听写规则折叠面板
   toggleSettings() {
     this.setData({ showSettings: !this.data.showSettings });
+  },
+
+  updateItemRects(cb) {
+    const query = wx.createSelectorQuery().in(this);
+    query.selectAll('.grid-item').boundingClientRect();
+    query.exec((res) => {
+      if (res[0] && res[0].length > 0) {
+        this.itemRects = res[0];
+      }
+      if (typeof cb === 'function') cb();
+    });
+  },
+
+  // ========== 拖拽开始 ==========
+  onDragStart(e) {
+    const index = e.currentTarget.dataset.index;
+    const item = this.data.wordList[index];
+    if (!item) return;
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+
+    // 每次拖拽前重新测量一次 rect
+    this.updateItemRects(() => {
+      const rect = this.itemRects[index];
+      if (!rect) return;
+
+      this.dragOffsetX = touch.clientX - rect.left;
+      this.dragOffsetY = touch.clientY - rect.top;
+
+      this.setData({
+        isDragging: true,
+        draggingId: item.wordId,
+        ghostItem: { ...item },
+        ghostIndex: index,
+        ghostX: rect.left,
+        ghostY: rect.top,
+        ghostW: rect.width,
+        ghostH: rect.height,
+      });
+    });
+  },
+
+  // ========== 拖拽中 ==========
+  onDragMove(e) {
+    if (!this.data.isDragging) return;
+
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+    const newX = touch.clientX - this.dragOffsetX;
+    const newY = touch.clientY - this.dragOffsetY;
+
+    this.setData({ ghostX: newX, ghostY: newY });
+
+    const centerX = newX + this.data.ghostW / 2;
+    const centerY = newY + this.data.ghostH / 2;
+
+    let targetIndex = -1;
+    for (let i = 0; i < this.itemRects.length; i++) {
+      const r = this.itemRects[i];
+      if (
+        centerX >= r.left &&
+        centerX <= r.right &&
+        centerY >= r.top &&
+        centerY <= r.bottom
+      ) {
+        targetIndex = i;
+        break;
+      }
+    }
+
+    if (targetIndex !== -1) {
+      const currentIndex = this.data.wordList.findIndex(
+        (it) => it.wordId === this.data.draggingId
+      );
+      if (targetIndex !== currentIndex) {
+        this.swapItems(currentIndex, targetIndex);
+      }
+    }
+  },
+
+  // ========== 交换数据 ==========
+  swapItems(fromIndex, toIndex) {
+    const wordList = [...this.data.wordList];
+    const temp = wordList[fromIndex];
+    wordList[fromIndex] = wordList[toIndex];
+    wordList[toIndex] = temp;
+
+    this.setData({ wordList });
+
+    wx.nextTick(() => {
+      this.updateItemRects();
+    });
+  },
+
+  // ========== 拖拽结束 ==========
+  onDragEnd() {
+    this.setData({
+      isDragging: false,
+      draggingId: null,
+      ghostItem: null,
+    });
   },
 
   // 1. 删除词语
@@ -112,6 +227,10 @@ Page({
       wordList: list,
       totalWords: newTotal,
       takeCount: newTakeCount,
+    });
+
+    wx.nextTick(() => {
+      this.updateItemRects();
     });
   },
 
@@ -394,6 +513,10 @@ Page({
     });
 
     this.onCloseAddModal();
+
+    wx.nextTick(() => {
+      this.updateItemRects();
+    });
 
     const dupCount = newWords.length - uniqueNewWords.length;
     let toastMsg = `已添加 ${uniqueNewWords.length} 个单词`;

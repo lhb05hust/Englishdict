@@ -17,7 +17,7 @@ page {
 /* 头部样式 */
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: baseline;
   margin-bottom: 20rpx;
   gap: 20rpx;
@@ -38,9 +38,9 @@ page {
 
 .tips-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 30rpx;
-  gap: 20rpx;
+  gap: 40rpx;
 }
 
 .tip-text {
@@ -61,6 +61,11 @@ page {
   transition: all 0.25s ease;
 }
 
+.grid-item.dragging {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
 /* 卡片容器 */
 .card-wrapper {
   position: relative;
@@ -73,31 +78,54 @@ page {
   flex-direction: column;
 }
 
-/* 右上角删除叉 */
-.delete-handle {
+/* 右上角工具区：拖拽 + 删除 */
+.card-tools {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 6rpx;
+  right: 6rpx;
   z-index: 10;
+  display: flex;
+  gap: 12rpx;
+}
+
+.tool-btn {
+  position: relative;
   width: 40rpx;
   height: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #faebeb;
   border-radius: 50%;
-  margin: 6rpx;
+}
+
+/* 透明热区扩展：向外各扩 6rpx，视觉大小不变 */
+.tool-btn::before {
+  content: '';
+  position: absolute;
+  top: -6rpx;
+  left: -6rpx;
+  right: -6rpx;
+  bottom: -6rpx;
+}
+
+.delete-tool {
+  background: transparent;
 }
 .delete-icon {
-  font-size: 28rpx;
+  font-size: 32rpx;
   color: #b56d6d;
   line-height: 1;
-  font-weight: 300;
+  font-weight: 400;
   margin-bottom: 2rpx;
-  margin-left: 2rpx;
 }
-.delete-handle:active {
-  opacity: 0.7;
+
+.drag-tool {
+  background: transparent;
+}
+.drag-icon {
+  font-size: 26rpx;
+  color: #60a5fa;
+  line-height: 1;
 }
 
 /* 卡片内容 */
@@ -116,7 +144,7 @@ page {
 .card-top {
   display: flex;
   align-items: baseline;
-  padding-right: 56rpx;
+  padding-right: 100rpx;
   gap: 12rpx;
 }
 
@@ -181,6 +209,27 @@ page {
   color: #666666;
 }
 
+/* 幽灵卡片 */
+.ghost-card {
+  position: fixed;
+  z-index: 999;
+  pointer-events: none;
+}
+.ghost-card .card-wrapper {
+  box-shadow: 0 16rpx 48rpx rgba(96, 165, 250, 0.22);
+  transform: scale(1.06);
+}
+.ghost-card .card-tools {
+  top: 6rpx;
+  right: 6rpx;
+}
+.ghost-card .card-top {
+  padding-right: 50rpx;
+}
+.ghost-card .index-num {
+  color: #60a5fa;
+}
+
 /* 底部固定按钮 */
 .footer {
   position: fixed;
@@ -229,6 +278,7 @@ page {
   height: 100rpx;
   line-height: 100rpx;
   background-color: #dbeafe;
+  border: 2rpx solid #bfdbfe;
   color: #444444;
   font-size: 36rpx;
   border-radius: 50rpx;
@@ -260,6 +310,12 @@ page {
   width: 100%;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+/* 折叠内容容器：用 hidden 控制显隐，子组件提前渲染 */
+.settings-body {
+  width: 100%;
   box-sizing: border-box;
 }
 
