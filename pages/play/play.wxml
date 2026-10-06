@@ -10,11 +10,13 @@
 
   <!-- 中间词语卡片 -->
   <view class="word-card">
+    <!-- 英文在上 -->
+    <view wx:if="{{!showWord}}" class="word-hide">单词已隐藏</view>
+    <view wx:else class="word-show">{{currentWord.text}}</view>
+
+    <!-- 中文在下 -->
     <view wx:if="{{!showCn}}" class="word-hide"></view>
     <view wx:else class="word-show word-show-cn">{{currentWord.cn}}</view>
-
-    <view wx:if="{{!showWord}}" class="word-hide">当前词已隐藏</view>
-    <view wx:else class="word-show">{{currentWord.text}}</view>
   </view>
 
   <!-- 查看词语按钮 -->
