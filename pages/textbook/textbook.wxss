@@ -42,6 +42,8 @@ page {
 
 /* ============ 单元卡片 ============ */
 .lesson-block {
+  width: 100%;
+  box-sizing: border-box;
   background: #ffffff;
   border-radius: 24rpx;
   padding: 24rpx;
@@ -138,7 +140,7 @@ page {
   background: #ffffff;
   border: 2rpx solid #e4edf8;
   border-radius: 12rpx;
-  min-width: 76rpx;
+  min-width: 140rpx;
   max-width: 100%;
   transition: all 0.2s ease;
   box-sizing: border-box;
