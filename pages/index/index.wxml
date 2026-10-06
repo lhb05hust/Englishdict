@@ -5,76 +5,71 @@
 </view>
 
 <view class="page" style="padding-top:{{navTotalHeight}}px">
-  <view class="banner-card">
-    <view class="banner-left">
-      <view class="banner-title">英语听写不求人</view>
-      <view class="banner-subtitle">同步1-9年级教材，选一课就能听写</view>
+
+  <!-- 主入口：按教材听写 -->
+  <view class="func-card main-card" bindtap="goBooks" hover-class="card-hover">
+    <view class="main-icon"><text class="icon-emoji">📚</text></view>
+    <view class="main-text">
+      <view class="main-title">按教材听写单词</view>
+      <view class="main-desc">同步课本单词表，按单元勾选听写</view>
     </view>
-    <view class="banner-illustration">
-      <image src="/images/child.png" mode="aspectFit" style="width:100%;height:100%;"/>
+    <view class="arrow-btn"><text class="arrow">></text></view>
+  </view>
+
+  <!-- 拍照听写（加宽） + 相册 / 粘贴 -->
+  <view class="photo-row">
+    <!-- 左侧：拍照听写 -->
+    <view class="func-card photo-card" bindtap="goPhotoDict" hover-class="card-hover">
+      <view class="photo-icon">📷</view>
+      <view class="photo-text">
+        <view class="photo-title">拍照听写</view>
+        <view class="photo-desc">拍单词表，识别听写</view>
+      </view>
+      <view class="photo-arrow">›</view>
+    </view>
+
+    <!-- 右侧：相册 + 粘贴 上下堆叠 -->
+    <view class="sub-col">
+      <view class="func-card sub-card" bindtap="goUploadPhoto" hover-class="card-hover">
+        <view class="sub-icon">🖼</view>
+        <view class="sub-title">相册取词</view>
+        <view class="sub-arrow">›</view>
+      </view>
+      <view class="func-card sub-card" bindtap="goCustomDict" hover-class="card-hover">
+        <view class="sub-icon">✍️</view>
+        <view class="sub-title">粘贴录入</view>
+        <view class="sub-arrow">›</view>
+      </view>
     </view>
   </view>
 
-  <!-- 核心功能区 -->
-  <view class="func-wrap">
-
-    <!-- 主大卡片：拍照听写（现在的主路径） -->
-    <view class="func-card main-card" bindtap="goPhotoDict" hover-class="card-hover">
-      <view class="main-icon"><text class="icon-emoji">📷</text></view>
-      <view class="main-text">
-        <view class="main-title">拍照听写单词</view>
-        <view class="main-desc">拍一下词表，就能自动识别听写</view>
-      </view>
-      <view class="arrow-btn"><text class="arrow">></text></view>
+  <!-- 上次听：轻提示（有记录时才显示） -->
+  <view wx:if="{{lastTextbookText}}" class="last-hint" bindtap="continueLastTextbook" hover-class="card-hover">
+    <view class="last-hint-left">
+      <view class="last-hint-label">上次听</view>
+      <view class="last-hint-value">{{lastTextbookText}}</view>
     </view>
+    <view class="last-hint-action">再听一遍 ›</view>
+  </view>
 
-    <!-- 通栏卡片：按教材听写 -->
-    <view class="func-card full-card" bindtap="goBooks" hover-class="card-hover">
-      <view class="full-icon">📚</view>
-      <view class="full-text">
-        <view class="full-title">按教材听写单词</view>
-        <view class="full-desc">同步课本词表，按课文勾选听写</view>
+  <!-- 复习与记录：列表行 -->
+  <view class="section-label">复习与记录</view>
+  <view class="list-wrap">
+    <view class="list-row" bindtap="goWrongBook" hover-class="cell-hover">
+      <view class="list-icon">📕</view>
+      <view class="list-text">
+        <view class="list-title">错题本</view>
+        <view class="list-desc">复习易错单词</view>
       </view>
-      <view class="arrow-btn"><text class="arrow">></text></view>
+      <view class="list-arrow">›</view>
     </view>
-
-    <!-- 两栏并排小卡片 -->
-    <view class="func-row">
-      <view class="func-card col-card" bindtap="goCustomDict" hover-class="card-hover">
-        <view class="col-icon">✍️</view>
-        <view class="col-text">
-          <view class="col-title">批量录入单词</view>
-          <view class="col-desc">输入或粘贴多个</view>
-        </view>
-        <view class="col-arrow">></view>
+    <view class="list-row" bindtap="goRecord" hover-class="cell-hover">
+      <view class="list-icon">📋</view>
+      <view class="list-text">
+        <view class="list-title">听写记录</view>
+        <view class="list-desc">历史练习</view>
       </view>
-      <!-- 上传照片 -->
-      <view class="func-card col-card" bindtap="goUploadPhoto" hover-class="card-hover">
-        <view class="col-icon">🖼️</view>
-        <view class="col-text">
-          <view class="col-title">传图识单词</view>
-          <view class="col-desc">从相册选图</view>
-        </view>
-        <view class="col-arrow">></view>
-      </view>
-    </view>
-
-    <!-- 错题本 -->
-    <view class="func-card full-card small-card" bindtap="goWrongBook" hover-class="card-hover">
-      <view class="full-text">
-        <view class="full-title">错题本</view>
-        <view class="full-desc">记录易错单词</view>
-      </view>
-      <view class="arrow-btn light-arrow"><text class="arrow">></text></view>
-    </view>
-
-    <!-- 听写记录 -->
-    <view class="func-card small-card" bindtap="goRecord" hover-class="card-hover">
-      <view class="full-text">
-        <view class="full-title">听写记录</view>
-        <view class="full-desc">查看全部历史听写练习</view>
-      </view>
-      <view class="arrow-btn light-arrow"><text class="arrow">></text></view>
+      <view class="list-arrow">›</view>
     </view>
   </view>
 
@@ -119,5 +114,6 @@
     </button>
   </view>
 
+  <!-- 隐藏Canvas，用于相册图片裁剪为1.35比例 -->
   <canvas type="2d" id="preprocessCanvas" style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;"></canvas>
 </view>

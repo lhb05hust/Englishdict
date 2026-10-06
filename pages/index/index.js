@@ -1,43 +1,79 @@
 const lStore = require("../../utils/localStore");
-Page({
-  data:{
-    recentList:[],
-    statusBarHeight:0,   //状态栏高度，单位px
-    navTitleAreaHeight:88, //标题区固定高度 rpx，转px
-    navTotalHeight:0
-  },
-  onLoad() {
-    // 获取系统窗口信息，statusBarHeight单位px
-    const winInfo = wx.getWindowInfo();
-    const statusBarHeight = winInfo.statusBarHeight || 24; //兜底，防止部分安卓返回0
-    console.log(statusBarHeight);
-    // rpx转px公式：屏幕宽度 /750
-    const rpx2px = winInfo.screenWidth /750;
-    const titleAreaPx = this.data.navTitleAreaHeight * rpx2px;
 
+// ============ 英语版显示文案映射 ============
+const EN_VER_LABELS = {
+  rjb:  '人教版',
+  wyb:  '外研版',
+  ylb:  '译林版',
+  bsdb: '北师大版',
+  hjb:  '沪教版',
+  jkb:  '教科版',
+};
+
+const EN_GRADE_LABELS = {
+  p3: '三年级', p4: '四年级', p5: '五年级', p6: '六年级',
+  j7: '七年级', j8: '八年级', j9: '九年级',
+  senior: '高中',
+};
+
+const EN_SENIOR_BOOK_LABELS = {
+  bx1: '必修1', bx2: '必修2', bx3: '必修3',
+  xb1: '选必1', xb2: '选必2', xb3: '选必3', xb4: '选必4',
+};
+
+// 把 getEnSelected() 的三字段拼成显示文案
+// 例："人教版 · 高中必修3"
+function buildLastTextbookText(saved) {
+  if (!saved || !saved.grade || !saved.ver || !saved.bid) return '';
+  const verLabel = EN_VER_LABELS[saved.ver] || saved.ver;
+  const gradeLabel = EN_GRADE_LABELS[saved.grade] || saved.grade;
+
+  let bookLabel = '';
+  if (EN_SENIOR_BOOK_LABELS[saved.bid]) {
+    bookLabel = EN_SENIOR_BOOK_LABELS[saved.bid];
+  } else {
+    const term = saved.bid.slice(-1);
+    bookLabel = term === '1' ? '上册' : '下册';
+  }
+
+  return `${verLabel} · ${gradeLabel}${bookLabel}`;
+}
+
+Page({
+  data: {
+    recentList: [],
+    statusBarHeight: 0,
+    navTitleAreaHeight: 88,
+    navTotalHeight: 0,
+    lastTextbookText: ''  // 上次教材听写的显示文案
+  },
+
+  onLoad() {
+    const winInfo = wx.getWindowInfo();
+    const statusBarHeight = winInfo.statusBarHeight || 24;
+    const rpx2px = winInfo.screenWidth / 750;
+    const titleAreaPx = this.data.navTitleAreaHeight * rpx2px;
     const navTotalHeight = statusBarHeight + titleAreaPx;
     this.setData({
       statusBarHeight,
       navTotalHeight
     });
   },
-  
-  onShow(){
-    // 页面打开加载最近练习记录
-    this.loadRecentRecord()
+
+  onShow() {
+    this.loadRecentRecord();
+    this.loadLastTextbook();
   },
+
   loadRecentRecord() {
     const rawRecords = lStore.getDictRecords();
     if (!rawRecords) {
       this.setData({ recentList: [] });
       return;
     }
-    // Object.values转数组，时间戳倒序，最新在前
     const list = Object.values(rawRecords).sort((a, b) => b.timestamp - a.timestamp);
-    // 只取前5条
     const top5 = list.slice(0, 3);
 
-    // 字段完全对齐 dict_records 的formattedList
     const recentData = top5.map(item => {
       return {
         rId: item.rId,
@@ -47,10 +83,16 @@ Page({
       };
     });
 
-    this.setData({
-      recentList: recentData
-    });
+    this.setData({ recentList: recentData });
   },
+
+  // 读取英语版教材记忆（三字段），拼显示文案
+  loadLastTextbook() {
+    const saved = lStore.getEnSelected();
+    const text = buildLastTextbookText(saved);
+    this.setData({ lastTextbookText: text });
+  },
+
   formatTimeRelative(timestamp) {
     const now = Date.now();
     const diff = now - timestamp;
@@ -79,10 +121,9 @@ Page({
       return Math.floor(diff / year) + '年前';
     }
   },
+
   viewPractice(e) {
     const rId = e.currentTarget.dataset.rid;
-    console.log(rId);
-    console.log(this.data.recentList);
     const recordDict = lStore.getDictRecordById(rId);
     if (!recordDict) {
       wx.showToast({ title: '数据出错' });
@@ -99,41 +140,44 @@ Page({
     });
   },
 
-  goPhotoDict(){
+  goPhotoDict() {
     wx.navigateTo({ url: "/pages/camera/camera" });
   },
-  goCustomDict(){
-    wx.navigateTo({url:"/pages/dictation/dictation?showAdd=true"})
+  goCustomDict() {
+    wx.navigateTo({ url: "/pages/dictation/dictation?showAdd=true" });
   },
-  goWrongBook(){
-    wx.navigateTo({url:"/pages/wordBook/wordBook"})
+  goWrongBook() {
+    wx.navigateTo({ url: "/pages/wordBook/wordBook" });
   },
-  goRecord(){
+  goRecord() {
     wx.navigateTo({ url: "/pages/record/record" });
   },
   goBooks() {
     wx.navigateTo({ url: "/pages/textbook/textbook" });
   },
-  continuePractice(e){
-    const id = e.currentTarget.dataset.id
-    // todo:继续上次听写
+
+  // "再听一遍"：跳教材页并让教材页恢复上次勾选（restore=1）
+  continueLastTextbook() {
+    if (!this.data.lastTextbookText) return;
+    wx.navigateTo({
+      url: '/pages/textbook/textbook?restore=1'
+    });
   },
+
   onShareAppMessage(res) {
     return {
       title: getApp().globalData.appName,
       path: "/pages/index/index"
-    }
+    };
   },
-  onShareTimeline(){
+  onShareTimeline() {
     return {
-      title:getApp().globalData.appName,
-      query:""
-    }
+      title: getApp().globalData.appName,
+      query: ""
+    };
   },
 
-  // ========== 以下为新增方法 ==========
-
-  // 从相册选图 → 前处理裁剪为1.35比例 → 持久化 → 跳转裁剪页
+  // ========== 从相册选图 → 前处理裁剪为1.35比例 → 持久化 → 跳转裁剪页 ==========
   goUploadPhoto() {
     wx.chooseMedia({
       count: 1,
@@ -152,7 +196,6 @@ Page({
     });
   },
 
-  // 图片前处理：居中裁剪使宽高比 = 1.35，与相机预览比例一致
   preprocessImage(filePath) {
     wx.getImageInfo({
       src: filePath,
@@ -164,13 +207,11 @@ Page({
         let cropW, cropH, cropX, cropY;
 
         if (imgHeight / imgWidth >= targetRatio) {
-          // 图片偏高 → 裁上下
           cropW = imgWidth;
           cropH = Math.floor(imgWidth * targetRatio);
           cropX = 0;
           cropY = Math.floor((imgHeight - cropH) / 2);
         } else {
-          // 图片偏宽 → 裁左右
           cropH = imgHeight;
           cropW = Math.floor(imgHeight / targetRatio);
           cropX = Math.floor((imgWidth - cropW) / 2);
@@ -199,26 +240,22 @@ Page({
                   this.saveAndGoCrop(tmpRes.tempFilePath);
                 },
                 fail: () => {
-                  // canvas处理失败降级用原图
                   this.saveAndGoCrop(filePath);
                 }
               });
             };
             img.onerror = () => {
-              // 图片加载失败降级用原图
               this.saveAndGoCrop(filePath);
             };
             img.src = filePath;
           });
       },
       fail: () => {
-        // 获取图片信息失败降级用原图
         this.saveAndGoCrop(filePath);
       }
     });
   },
 
-  // 持久化 + 跳转裁剪页（与 camera.js takePhoto 后半段逻辑一致）
   saveAndGoCrop(filePath) {
     wx.saveFile({
       tempFilePath: filePath,
