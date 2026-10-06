@@ -8,10 +8,13 @@
 
   <!-- 主入口：按教材听写 -->
   <view class="func-card main-card" bindtap="goBooks" hover-class="card-hover">
-    <view class="main-icon"><text class="icon-emoji">📚</text></view>
+    <view class="main-icon">
+      <text class="icon-emoji">📚</text>
+      <text class="icon-badge">abc</text>
+    </view>
     <view class="main-text">
       <view class="main-title">按教材听写单词</view>
-      <view class="main-desc">同步课本单词表，按单元勾选听写</view>
+      <view class="main-desc">同步英文单词表，按单元听写</view>
     </view>
     <view class="arrow-btn"><text class="arrow">></text></view>
   </view>
