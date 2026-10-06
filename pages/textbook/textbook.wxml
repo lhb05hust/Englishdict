@@ -74,11 +74,11 @@
                 hover-class="btn-hover">{{item.label}}</view>
         </view>
 
-        <!-- 第二层：版本（选完年级后出现） -->
-        <block wx:if="{{selectedGrade}}">
+        <!-- 第二层：版本（选完年级后出现，只显示当前年级可用的版本） -->
+        <block wx:if="{{selectedGrade && visibleVersions.length > 0}}">
           <view class="group-label group-label-term">② 选择版本</view>
           <view class="ver-grid">
-            <view wx:for="{{versions}}" wx:key="ver"
+            <view wx:for="{{visibleVersions}}" wx:key="ver"
                   class="ver-btn {{selectedVer === item.ver ? 'active' : ''}}"
                   data-ver="{{item.ver}}"
                   bindtap="onVerSelect"

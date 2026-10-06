@@ -24,7 +24,7 @@ function decryptBook(encryptedBase64, bid) {
 
 /**
  * 请求 + 解密英语教材
- * @param {string} ver 版本，如 rjb_pep
+ * @param {string} ver 版本，如 rjb
  * @param {string} bid 册号，如 b31 / b101
  * @returns {{promise, task}} task 用于 abort
  */
@@ -56,4 +56,32 @@ function getBook(ver, bid) {
   return { promise, task };
 }
 
-module.exports = { getBook, decryptBook };
+/**
+ * 请求英语教材版本元数据（不加密）
+ * 返回 { versions: [{label, ver}], availability: { gradeKey: [ver, ...] } }
+ * @returns {{promise, task}} task 用于 abort
+ */
+function getEnMeta() {
+  let task = null;
+  const promise = new Promise((resolve, reject) => {
+    task = wx.request({
+      url: BASE + '/en/meta',
+      method: 'GET',
+      timeout: 10000,
+      success: (res) => {
+        if (res.statusCode !== 200) {
+          return reject(new Error('网络异常 ' + res.statusCode));
+        }
+        const result = res.data;
+        if (!result || result.code !== '0') {
+          return reject(new Error((result && result.msg) || '加载失败'));
+        }
+        resolve(result.data || {});
+      },
+      fail: reject,
+    });
+  });
+  return { promise, task };
+}
+
+module.exports = { getBook, getEnMeta, decryptBook };

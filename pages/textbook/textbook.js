@@ -2,18 +2,7 @@ const lStore = require("../../utils/localStore");
 const bookApi = require("../../utils/bookApi");
 
 // ============ 静态配置 ============
-// 版本列表：label 是用户看到的，ver 是后端文件夹名
-// 未来某个版本没数据，注释掉对应行即可
-const VERSIONS = [
-  { label: '人教版',   ver: 'rjb'  },
-  { label: '译林版',   ver: 'ylb'  },
-  { label: '沪教版',   ver: 'hjb'  },
-  { label: '外研版',   ver: 'wyb'  },
-  { label: '教科版',   ver: 'jkb'  },
-  { label: '北师大版', ver: 'bsdb' },
-];
-
-// 年级列表：小学 3-6 + 初中 7-9 + 高中
+// 年级列表（硬编码，不走接口）
 const GRADES = [
   { key: 'p3', label: '三年级', stage: 'primary', gradeNum: 3 },
   { key: 'p4', label: '四年级', stage: 'primary', gradeNum: 4 },
@@ -35,6 +24,21 @@ const SENIOR_BOOKS = [
   { bid: 'xb3', label: '选必3' },
   { bid: 'xb4', label: '选必4' },
 ];
+
+// 版本中文名映射：仅用于拼装顶部标题和摘要文案
+// 展示顺序和可用性完全由 /en/meta 决定
+const VER_LABELS = {
+  rjb:  '人教版',
+  wyb:  '外研版',
+  ylb:  '译林版',
+  bsdb: '北师大版',
+  hjb:  '沪教版',
+  jkb:  '教科版',
+};
+
+function getVerLabel(ver) {
+  return VER_LABELS[ver] || ver;
+}
 
 /**
  * 根据年级生成册次列表
@@ -58,9 +62,8 @@ function getBooksForGrade(gradeKey) {
  */
 function buildBookLabel(gradeKey, ver, bid) {
   const grade = GRADES.find(g => g.key === gradeKey);
-  const version = VERSIONS.find(v => v.ver === ver);
   const gradeLabel = grade ? grade.label : '';
-  const verLabel = version ? version.label : ver;
+  const verLabel = getVerLabel(ver);
 
   let bookLabel = '';
   if (grade && grade.stage === 'senior') {
@@ -80,10 +83,9 @@ function buildBookLabel(gradeKey, ver, bid) {
  */
 function buildSummary(gradeKey, ver, bid) {
   const grade = GRADES.find(g => g.key === gradeKey);
-  const version = VERSIONS.find(v => v.ver === ver);
 
   const parts = [];
-  if (version) parts.push(version.label);
+  if (ver) parts.push(getVerLabel(ver));
   if (grade) parts.push(grade.label);
   if (bid && grade) {
     let bookLabel = '';
@@ -103,8 +105,12 @@ Page({
   data: {
     showBookModal: false,
 
-    // 静态配置
-    versions: VERSIONS,
+    // 从 /en/meta 拉取的数据
+    versions: [],           // [{label, ver}]，用于渲染版本区
+    availability: {},       // { gradeKey: [ver, ...] }
+    visibleVersions: [],    // 当前年级下可见的版本
+
+    // 年级列表（硬编码）
     grades: GRADES,
     books: [],
 
@@ -123,6 +129,7 @@ Page({
   },
 
   _requestTask: null,
+  _metaTask: null,
   _loadingFromMemory: false,
   _destroyed: false,
 
@@ -155,27 +162,84 @@ Page({
       this._requestTask.abort();
       this._requestTask = null;
     }
+    if (this._metaTask) {
+      this._metaTask.abort();
+      this._metaTask = null;
+    }
     wx.hideLoading();
   },
 
   // ============ 弹窗 ============
+  // 每次打开都拉 meta（不做缓存）
   openBookModal() {
-    this.setData({ showBookModal: true });
+    wx.showLoading({ title: '加载中', mask: false });
+
+    const { promise, task } = bookApi.getEnMeta();
+    this._metaTask = task;
+
+    promise.then((meta) => {
+      if (this._destroyed) return;
+      this._metaTask = null;
+      wx.hideLoading();
+
+      const versions = Array.isArray(meta.versions) ? meta.versions : [];
+      const availability = meta.availability || {};
+
+      // 按当前年级过滤可见版本
+      const selectedGrade = this.data.selectedGrade;
+      const allowed = availability[selectedGrade] || [];
+      const visibleVersions = versions.filter(v => allowed.includes(v.ver));
+
+      // 校验之前选中的版本在新数据下是否仍可用
+      const selectedVer = this.data.selectedVer;
+      const verStillValid = selectedVer && allowed.includes(selectedVer);
+
+      this.setData({
+        versions,
+        availability,
+        visibleVersions,
+        selectedVer: verStillValid ? selectedVer : '',
+        selectedBid: verStillValid ? this.data.selectedBid : '',
+        showBookModal: true,
+      });
+    }).catch((err) => {
+      if (this._destroyed) return;
+      this._metaTask = null;
+      wx.hideLoading();
+
+      if (err && err.errMsg && err.errMsg.indexOf('abort') !== -1) {
+        console.log('用户取消加载');
+        return;
+      }
+
+      console.error('meta 请求失败', err);
+      this.handleLoadFail('网络请求失败');
+    });
   },
 
   onCloseBookModal() {
     this.setData({ showBookModal: false });
   },
 
-  // 选年级 → 重建册次列表，清空后续选择
+  // 选年级 → 重建册次列表、重新计算可见版本、清理后续选择
   onGradeSelect(e) {
     const key = e.currentTarget.dataset.key;
-    const selectedVer = this.data.selectedVer;
+    const { selectedVer, availability, versions } = this.data;
+
+    const allowed = availability[key] || [];
+    const visibleVersions = versions.filter(v => allowed.includes(v.ver));
+
+    // 校验之前选中的版本在新年级下是否仍可用
+    const verStillValid = selectedVer && allowed.includes(selectedVer);
+    const newVer = verStillValid ? selectedVer : '';
+
     this.setData({
       selectedGrade: key,
+      selectedVer: newVer,
       selectedBid: '',
+      visibleVersions,
       books: getBooksForGrade(key),
-      selectedSummary: buildSummary(key, selectedVer, ''),
+      selectedSummary: buildSummary(key, newVer, ''),
     });
   },
 
@@ -264,6 +328,7 @@ Page({
     });
   },
 
+  // 统一失败处理：有教材 → 保留原册；无教材 → 退回首页
   handleLoadFail(msg) {
     if (this.data.units.length > 0) {
       wx.showToast({ title: '加载失败，保留原册', icon: 'none' });
