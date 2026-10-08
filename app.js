@@ -1,7 +1,7 @@
 const wordUtils = require('./utils/localStore');
 App({
   globalData: {
-    appName: "英语听写小帮手",
+    appName: "英语听写小能手",
     localUserId: "",
     // 本地调试填局域网IP，上线替换备案HTTPS域名
     //baseUrl: "http://47.119.191.99:8080",
