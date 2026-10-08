@@ -13,7 +13,7 @@
       <text class="icon-badge">abc</text>
     </view>
     <view class="main-text">
-      <view class="main-title">按教材听写单词</view>
+      <view class="main-title">按英语教材听写</view>
       <view class="main-desc">同步英文单词表，按单元听写</view>
     </view>
     <view class="arrow-btn"><text class="arrow">></text></view>
@@ -25,7 +25,7 @@
     <view class="func-card photo-card" bindtap="goPhotoDict" hover-class="card-hover">
       <view class="photo-icon">📷</view>
       <view class="photo-text">
-        <view class="photo-title">拍照听写</view>
+        <view class="photo-title">拍单词表听写</view>
         <view class="photo-desc">拍单词表，识别听写</view>
       </view>
       <view class="photo-arrow">›</view>
