@@ -188,6 +188,7 @@ page {
   background-color: #ffffff;
   border: 2rpx dashed #c5d8f0;
   border-radius: 24rpx;
+  flex-direction: row; 
   justify-content: center;
   align-items: center;
   box-shadow: none;
