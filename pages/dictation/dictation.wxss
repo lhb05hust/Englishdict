@@ -68,7 +68,6 @@ page {
 
 /* 卡片容器 */
 .card-wrapper {
-  position: relative;
   background: #ffffff;
   border-radius: 24rpx;
   box-shadow: 0 3rpx 14rpx rgba(96, 165, 250, 0.08);
@@ -78,14 +77,35 @@ page {
   flex-direction: column;
 }
 
-/* 右上角工具区：拖拽 + 删除 */
-.card-tools {
-  position: absolute;
-  top: 6rpx;
-  right: 6rpx;
-  z-index: 10;
+/* 卡片整体：三行结构 */
+.card {
+  padding: 16rpx 20rpx;
+  flex: 1;
   display: flex;
-  gap: 12rpx;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+/* 第1行：序号 + 工具按钮 */
+.card-row-1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40rpx;
+  flex-shrink: 0;
+}
+
+.index-num {
+  font-size: 26rpx;
+  color: #999999;
+  line-height: 1;
+}
+
+.card-tools {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
 
 .tool-btn {
@@ -128,39 +148,17 @@ page {
   line-height: 1;
 }
 
-/* 卡片内容 */
-.card {
-  padding: 24rpx 20rpx;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-sizing: border-box;
-  min-height: 0;
-  gap: 10rpx;
-}
-
-/* card-top：序号 + 英文 */
-.card-top {
+/* 第2行：英文 */
+.card-row-2 {
+  margin-top: 4rpx;
   display: flex;
   align-items: baseline;
-  padding-right: 100rpx;
-  gap: 12rpx;
-}
-
-.index-num {
-  font-size: 26rpx;
-  color: #999999;
-  flex-shrink: 0;
-  line-height: 1.3;
 }
 
 .word-text {
-  font-size: 36rpx;
+  font-size: 34rpx;
   font-weight: 600;
   color: #222222;
-  flex: 1;
-  min-width: 0;
   line-height: 1.3;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -169,10 +167,11 @@ page {
   opacity: 0.65;
 }
 
-/* 中文释义 */
-.cn-row {
-  padding-left: 36rpx;
+/* 第3行：中文 */
+.card-row-3 {
+  margin-top: 4rpx;
 }
+
 .cn-text {
   font-size: 26rpx;
   color: #555555;
@@ -218,13 +217,6 @@ page {
 .ghost-card .card-wrapper {
   box-shadow: 0 16rpx 48rpx rgba(96, 165, 250, 0.22);
   transform: scale(1.06);
-}
-.ghost-card .card-tools {
-  top: 6rpx;
-  right: 6rpx;
-}
-.ghost-card .card-top {
-  padding-right: 50rpx;
 }
 .ghost-card .index-num {
   color: #60a5fa;
