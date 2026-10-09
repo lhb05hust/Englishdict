@@ -36,7 +36,7 @@
           </view>
         </view>
         <view class="card-right">
-          <van-icon name="arrow" class="arrow-icon" size="32rpx" />
+          <van-icon name="arrow" class="arrow-icon" size="26rpx" />
         </view>
       </view>
 

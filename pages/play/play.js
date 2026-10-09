@@ -175,7 +175,7 @@ Page({
       tts.speakFinish();
       wx.showModal({
         title: "听写结束🎉，请检查",
-        content: "单词听写完毕,点击”确定“进行检查",
+        content: "单词听写完毕,点”确定“进行检查",
         showCancel: false,
         success: () => {
           console.log(Date.now());
