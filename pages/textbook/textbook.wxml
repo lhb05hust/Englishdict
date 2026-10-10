@@ -13,7 +13,8 @@
   <block wx:else>
     <view class="lesson-block" wx:for="{{units}}" wx:key="title" wx:for-item="unit" wx:for-index="uIdx">
 
-      <view class="lesson-header {{unit._selected ? 'lesson-header-active' : ''}}"
+      <!-- 单元 header：三态 checkbox -->
+      <view class="lesson-header {{unit._selAll ? 'lesson-header-active' : ''}}"
             data-index="{{uIdx}}"
             bindtap="onToggleUnit"
             hover-class="lesson-header-hover"
@@ -23,15 +24,21 @@
           <text class="lesson-count">{{unit.words.length}} 个词</text>
         </view>
         <view class="checkbox-hit">
-          <view class="checkbox {{unit._selected ? 'checked' : ''}}">
-            <text class="check-icon" wx:if="{{unit._selected}}">✓</text>
+          <view class="checkbox {{unit._selAll ? 'checked' : ''}} {{unit._selPartial ? 'partial' : ''}}">
+            <text class="check-icon" wx:if="{{unit._selAll}}">✓</text>
+            <view class="partial-line" wx:elif="{{unit._selPartial}}"></view>
           </view>
         </view>
       </view>
 
+      <!-- 单词 chips：每个可单独点选 -->
       <view class="chip-list">
-        <view class="chip {{unit._selected ? 'chip-active' : ''}}"
-              wx:for="{{unit.words}}" wx:key="en" wx:for-item="w">
+        <view class="chip {{w._selected ? 'chip-active' : ''}}"
+              wx:for="{{unit.words}}" wx:key="en" wx:for-item="w" wx:for-index="wIdx"
+              data-uidx="{{uIdx}}" data-widx="{{wIdx}}"
+              bindtap="onToggleWord"
+              hover-class="chip-hover"
+              hover-start-time="0">
           <text class="chip-text">{{w.en}}</text>
           <text class="chip-pinyin">{{w.cn}}</text>
         </view>

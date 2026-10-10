@@ -106,9 +106,9 @@ Page({
     showBookModal: false,
 
     // 从 /en/meta 拉取的数据
-    versions: [],           // [{label, ver}]，用于渲染版本区
-    availability: {},       // { gradeKey: [ver, ...] }
-    visibleVersions: [],    // 当前年级下可见的版本
+    versions: [],
+    availability: {},
+    visibleVersions: [],
 
     // 年级列表（硬编码）
     grades: GRADES,
@@ -136,7 +136,6 @@ Page({
   onLoad() {
     const saved = lStore.getEnSelected();
     if (saved.grade && saved.ver && saved.bid) {
-      // 恢复上次选择
       this._loadingFromMemory = true;
       this.setData({
         selectedGrade: saved.grade,
@@ -150,7 +149,6 @@ Page({
   },
 
   onReady() {
-    // 没有记忆 → 打开选择弹窗
     if (!this.data.selectedBid) {
       this.openBookModal();
     }
@@ -170,7 +168,6 @@ Page({
   },
 
   // ============ 弹窗 ============
-  // 每次打开都拉 meta（不做缓存）
   openBookModal() {
     wx.showLoading({ title: '加载中', mask: false });
 
@@ -185,12 +182,10 @@ Page({
       const versions = Array.isArray(meta.versions) ? meta.versions : [];
       const availability = meta.availability || {};
 
-      // 按当前年级过滤可见版本
       const selectedGrade = this.data.selectedGrade;
       const allowed = availability[selectedGrade] || [];
       const visibleVersions = versions.filter(v => allowed.includes(v.ver));
 
-      // 校验之前选中的版本在新数据下是否仍可用
       const selectedVer = this.data.selectedVer;
       const verStillValid = selectedVer && allowed.includes(selectedVer);
 
@@ -221,7 +216,6 @@ Page({
     this.setData({ showBookModal: false });
   },
 
-  // 选年级 → 重建册次列表、重新计算可见版本、清理后续选择
   onGradeSelect(e) {
     const key = e.currentTarget.dataset.key;
     const { selectedVer, availability, versions } = this.data;
@@ -229,7 +223,6 @@ Page({
     const allowed = availability[key] || [];
     const visibleVersions = versions.filter(v => allowed.includes(v.ver));
 
-    // 校验之前选中的版本在新年级下是否仍可用
     const verStillValid = selectedVer && allowed.includes(selectedVer);
     const newVer = verStillValid ? selectedVer : '';
 
@@ -243,7 +236,6 @@ Page({
     });
   },
 
-  // 选版本 → 清空册次
   onVerSelect(e) {
     const ver = e.currentTarget.dataset.ver;
     const selectedGrade = this.data.selectedGrade;
@@ -254,7 +246,6 @@ Page({
     });
   },
 
-  // 选册次
   onBookSelect(e) {
     const bid = e.currentTarget.dataset.bid;
     const { selectedGrade, selectedVer } = this.data;
@@ -271,7 +262,6 @@ Page({
     if (!selectedVer)   { wx.showToast({ title: '请选择版本', icon: 'none' }); return; }
     if (!selectedBid)   { wx.showToast({ title: '请选择册次', icon: 'none' }); return; }
 
-    // 持久化三字段
     lStore.saveEnSelected(selectedGrade, selectedVer, selectedBid);
 
     this.setData({ showBookModal: false });
@@ -297,10 +287,18 @@ Page({
         return;
       }
 
+      // 【改动】每个 word 增加 _selected，unit 用 _selAll / _selPartial 表示三态
       const units = book.units.map((u) => ({
         title: u.title || '',
-        words: Array.isArray(u.words) ? u.words : [],
-        _selected: false,
+        words: Array.isArray(u.words)
+          ? u.words.map((w) => ({
+              en: w.en,
+              cn: w.cn,
+              _selected: false,
+            }))
+          : [],
+        _selAll: false,
+        _selPartial: false,
       }));
 
       const { selectedGrade, selectedVer, selectedBid } = this.data;
@@ -328,7 +326,6 @@ Page({
     });
   },
 
-  // 统一失败处理：有教材 → 保留原册；无教材 → 退回首页
   handleLoadFail(msg) {
     if (this.data.units.length > 0) {
       wx.showToast({ title: '加载失败，保留原册', icon: 'none' });
@@ -363,7 +360,9 @@ Page({
     });
   },
 
-  // ============ 单元选中 ============
+  // ============ 单元 header 点击：三态切换 ============
+  // 全不选 / 部分选 → 全选
+  // 全选 → 全不选
   onToggleUnit(e) {
     const idx = Number(e.currentTarget.dataset.index);
     if (isNaN(idx)) return;
@@ -371,8 +370,23 @@ Page({
     const units = this.data.units;
     if (!units[idx]) return;
 
+    const unit = units[idx];
+    const newSelectAll = !unit._selAll;
+
+    const newWords = (unit.words || []).map(w => ({
+      ...w,
+      _selected: newSelectAll,
+    }));
+
+    const newUnit = {
+      ...unit,
+      words: newWords,
+      _selAll: newSelectAll,
+      _selPartial: false,
+    };
+
     const newUnits = units.slice();
-    newUnits[idx] = { ...newUnits[idx], _selected: !units[idx]._selected };
+    newUnits[idx] = newUnit;
 
     this.setData({
       units: newUnits,
@@ -380,11 +394,51 @@ Page({
     });
   },
 
+  // ============ 单词 chip 点击：单独切换 ============
+  onToggleWord(e) {
+    const uIdx = Number(e.currentTarget.dataset.uidx);
+    const wIdx = Number(e.currentTarget.dataset.widx);
+    if (isNaN(uIdx) || isNaN(wIdx)) return;
+
+    const units = this.data.units;
+    if (!units[uIdx]) return;
+
+    const unit = units[uIdx];
+    if (!unit.words[wIdx]) return;
+
+    const newWords = unit.words.slice();
+    newWords[wIdx] = {
+      ...newWords[wIdx],
+      _selected: !newWords[wIdx]._selected,
+    };
+
+    const total = newWords.length;
+    const selCnt = newWords.filter(w => w._selected).length;
+    const allSel = total > 0 && selCnt === total;
+    const partial = selCnt > 0 && selCnt < total;
+
+    const newUnit = {
+      ...unit,
+      words: newWords,
+      _selAll: allSel,
+      _selPartial: partial,
+    };
+
+    const newUnits = units.slice();
+    newUnits[uIdx] = newUnit;
+
+    this.setData({
+      units: newUnits,
+      selectedCount: this.computeSelectedCountFrom(newUnits),
+    });
+  },
+
+  // 【改动】统计选中单词数（原来统计的是选中 unit 内所有词）
   computeSelectedCountFrom(units) {
     const seen = new Set();
     (units || []).forEach((u) => {
-      if (!u._selected) return;
       (u.words || []).forEach((w) => {
+        if (!w._selected) return;
         const text = (w.en || '').trim();
         if (text && !seen.has(text.toLowerCase())) {
           seen.add(text.toLowerCase());
@@ -394,6 +448,7 @@ Page({
     return seen.size;
   },
 
+  // 【改动】清空所有单词的选中
   onClearSelection() {
     if (this.data.selectedCount === 0) return;
 
@@ -404,13 +459,18 @@ Page({
       confirmColor: '#e53e3e',
       success: (res) => {
         if (!res.confirm) return;
-        const units = this.data.units.map((u) => ({ ...u, _selected: false }));
+        const units = this.data.units.map((u) => ({
+          ...u,
+          words: (u.words || []).map(w => ({ ...w, _selected: false })),
+          _selAll: false,
+          _selPartial: false,
+        }));
         this.setData({ units, selectedCount: 0 });
       },
     });
   },
 
-  // ============ 开始听写 ============
+  // 【改动】只收集被单独选中的单词
   onStartDictation() {
     const { selectedCount, units } = this.data;
 
@@ -423,8 +483,8 @@ Page({
     const wordList = [];
 
     units.forEach((u) => {
-      if (!u._selected) return;
       (u.words || []).forEach((w) => {
+        if (!w._selected) return;
         const text = (w.en || '').trim();
         const cn = (w.cn || '').trim();
         if (!text) return;

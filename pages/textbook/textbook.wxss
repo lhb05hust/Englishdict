@@ -89,7 +89,7 @@ page {
   flex-shrink: 0;
 }
 
-/* ============ checkbox ============ */
+/* ============ checkbox（三态） ============ */
 .checkbox-hit {
   padding: 24rpx;
   margin: -24rpx;
@@ -117,11 +117,25 @@ page {
   border-color: #60a5fa;
 }
 
+/* 【新增】部分选：蓝底 + 白色横线 */
+.checkbox.partial {
+  background: #60a5fa;
+  border-color: #60a5fa;
+}
+
 .check-icon {
   color: #ffffff;
   font-size: 32rpx;
   font-weight: bold;
   line-height: 1;
+}
+
+/* 【新增】部分选时的白色横线 */
+.partial-line {
+  width: 26rpx;
+  height: 4rpx;
+  background: #ffffff;
+  border-radius: 2rpx;
 }
 
 /* ============ 单词 chips ============ */
@@ -149,6 +163,12 @@ page {
 .chip-active {
   background: #e0f2fe;
   border-color: #60a5fa;
+}
+
+/* 【新增】chip 点击反馈 */
+.chip-hover {
+  opacity: 0.85;
+  transform: scale(0.97);
 }
 
 .chip-text {
@@ -314,7 +334,6 @@ page {
   box-shadow: 0 16rpx 48rpx rgba(96, 165, 250, 0.18);
 }
 
-/* 标题 + 尾部提示：同一行，居中 */
 .modal-header {
   text-align: center;
   margin-bottom: 24rpx;
@@ -345,7 +364,6 @@ page {
   padding: 4rpx;
 }
 
-/* ============ 分组标题：序号 + 加粗 ============ */
 .group-label {
   display: block;
   font-size: 32rpx;
@@ -359,7 +377,6 @@ page {
   margin-top: 36rpx;
 }
 
-/* ============ 年级网格 ============ */
 .grade-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -389,7 +406,6 @@ page {
   border-color: #60a5fa;
 }
 
-/* ============ 版本网格 ============ */
 .ver-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -420,7 +436,6 @@ page {
   border-color: #60a5fa;
 }
 
-/* ============ 册次网格 ============ */
 .book-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -452,7 +467,6 @@ page {
   border-color: #60a5fa;
 }
 
-/* ============ 弹窗底部 ============ */
 .modal-footer {
   display: flex;
   gap: 20rpx;
