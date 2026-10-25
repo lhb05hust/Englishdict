@@ -1,7 +1,7 @@
 <view class="status-bar" style="height:{{statusBarHeight}}px; background-color: #f5faff;"></view>
 <!-- 自定义导航栏 -->
 <view class="custom-nav" style="padding-top:{{statusBarHeight}}px;">
-  <view class="nav-title">听写小能手-单词听写</view>
+  <view class="nav-title">单词拍照听写</view>
 </view>
 
 <view class="page" style="padding-top:{{navTotalHeight}}px">
@@ -52,7 +52,7 @@
       <view class="last-hint-label">上次听</view>
       <view class="last-hint-value">{{lastTextbookText}}</view>
     </view>
-    <view class="last-hint-action">再听一遍 ›</view>
+    <view class="last-hint-action">再次听练 ›</view>
   </view>
 
   <!-- 复习与记录：列表行 -->

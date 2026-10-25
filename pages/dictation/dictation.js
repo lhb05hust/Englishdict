@@ -6,6 +6,8 @@ function normText(s) {
     .replace(/[\r\n]+/g, ' ')
     .trim()
     .toLowerCase()
+    .replace(/\s*-\s*/g, '-') // 【新增】把 "broadly- educated" 变成 "broadly-educated"
+    .replace(/\s*\'\s*/g, "'") // 【新增】把 "don ' t" 变成 "don't"
     .replace(/\s{2,}/g, ' ');
 }
 

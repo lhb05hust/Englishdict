@@ -1,13 +1,13 @@
 const wordUtils = require('./utils/localStore');
 App({
   globalData: {
-    appName: "单词听写小能手",
+    appName: "单词拍照听写",
     localUserId: "",
     // 本地调试填局域网IP，上线替换备案HTTPS域名
     //baseUrl: "http://47.119.191.99:8080",
-    baseUrl: "https://api.jhwin.cn",
+    //baseUrl: "https://api.jhwin.cn",
     //baseUrl: "http://192.168.1.16:8080",
-    //baseUrl: "http://172.20.10.14:8080",
+    baseUrl: "http://172.20.10.2:8080",
     
     tempImagePath: null,
     dictConfig: null,
@@ -15,16 +15,13 @@ App({
     wId2TextMap: {},
   },
   onLaunch() {
-    // 读取本地存储唯一设备标识
-    let uid = wx.getStorageSync("localUserId");
-    if (!uid) {
-      uid = this.createDevUUID();
-      wx.setStorageSync("localUserId", uid);
-    }
-    this.globalData.localUserId = uid;
-
+    // 1. 读取/生成 localUserId
+    this.ensureLocalUserId(); 
+    // 2. 初始化 map
     this.initTextMap();
+    // 3. 重写 wx API（顺序：先防抖，后 header）
     this.initFangDou();
+    this.initRequestHeader();
   },
   // 生成随机设备ID
   createDevUUID() {
@@ -32,8 +29,6 @@ App({
   },
   initTextMap() {
     const words = wordUtils.getAllWords();
-    //debugger; 
-    console.log(words);
     const text2WIdMap = this.globalData.text2WIdMap;
     const wId2TextMap = this.globalData.wId2TextMap;
     //map初始化一次
@@ -65,5 +60,28 @@ App({
       lastRedirectTime = now;
       return originalRedirectTo.call(wx, options);
     };
+  },
+  initRequestHeader() {
+    const app = this;                        // ← 保存 this 引用
+    const originalRequest = wx.request;
+    wx.request = function (options) {
+      if (options.url && options.url.startsWith(app.globalData.baseUrl)) {
+        options.header = options.header || {};
+        if (!options.header['local-user-id']) {
+          options.header['local-user-id'] = app.ensureLocalUserId();
+        }
+      }
+      return originalRequest.call(wx, options);
+    };
+  },
+  ensureLocalUserId() {
+    if (this.globalData.localUserId) return this.globalData.localUserId;
+    let uid = wx.getStorageSync("localUserId");
+    if (!uid) {
+      uid = this.createDevUUID();
+      try { wx.setStorageSync("localUserId", uid); } catch (e) {}
+    }
+    this.globalData.localUserId = uid;
+    return uid;
   }
 });

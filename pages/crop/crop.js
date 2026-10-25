@@ -662,8 +662,8 @@ getDisplayRects() {
   // 在 onRotateRight 函数后面，添加一个 showHelp 方法：
   showHelp() {
     wx.showModal({
-      title: '摆正文字识别更准确',
-      content: '如果图片里的文字是横着的，可以点击两侧的↺ / ↻ 按钮旋转图片。',
+      title: '如何识别又快又准？',
+      content: '1、摆正文字，通过两侧的↺ / ↻\n  2、准确框选要听的单词集，不要范围太大。',
       showCancel: false,
       confirmText: '我知道了',
       confirmColor: '#033c81',
