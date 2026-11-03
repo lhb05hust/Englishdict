@@ -2,6 +2,10 @@ const app = getApp();
 const tts = require("../../utils/tts");
 const lStore = require("../../utils/localStore");
 const { throttle } = require("../../utils/tool");
+const KeepScreenUtil = require("../../utils/keepScreenUtil");
+KeepScreenUtil.init({
+  showTip: false,
+});
 
 // ======================状态枚举常量（统一管理）======================
 const STATUS_PLAYING = 1;         //正在报读
@@ -84,6 +88,7 @@ Page({
       subStatusText: initText,
       currentWord: list[0]
     }, () => {
+      KeepScreenUtil.start(this);
       // 注意：不再调用 tts.clearCache()，改用 LRU 上限管理（见 utils/tts.js）
       setTimeout(() => {
         this.runDictFlow();
@@ -173,6 +178,8 @@ Page({
     const nextIdx = this.data.currentWordIndex + 1;
     if (nextIdx >= this.data.dictWordList.length) {
       tts.speakFinish();
+      //结束强撑亮屏机制
+      KeepScreenUtil.stop();
       wx.showModal({
         title: "听写结束🎉，请检查",
         content: "单词听写完毕,点”确定“进行检查",
@@ -316,6 +323,8 @@ Page({
   },
 
   onUnload() {
+    //结束强撑亮屏机制
+    KeepScreenUtil.stop();
     this.clearAllTimer();
     requestVersion++;
     tts.stopSpeak();
