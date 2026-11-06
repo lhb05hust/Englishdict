@@ -151,63 +151,73 @@ page {
 }
 
 /* ========== 主操作区 ========== */
+/* ========== 主操作区 ========== */
 .main-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24rpx;
-  margin-bottom: 0; /* 干掉底部边距，因为给 page padding-bottom 留了巨大空间 */
+  justify-content: space-between; /* 两端对齐，中间留空 */
+  gap: 20rpx;
+  margin-bottom: 0; 
   flex-shrink: 0;
 }
+
 .ctrl {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
+/* 左右按钮：变短（固定宽度）、变矮、字变小 */
 .ctrl-side {
-  flex: 1;
-  height: 110rpx;
+  width: 180rpx; /* 固定宽度，不再无限拉长 */
+  height: 84rpx; /* 从 110 缩到 84 */
   background: #ffffff;
   border: 2rpx solid #dbeafe;
-  border-radius: 55rpx;
-  color: #333333;
+  border-radius: 42rpx; /* 高度的一半，保持药丸形 */
+  color: #666666; /* 颜色变浅一点，弱化存在感 */
 }
+
 .ctrl-text {
-  font-size: 32rpx;
+  font-size: 28rpx; /* 字号调小 */
   font-weight: 500;
 }
 
+/* 中间的圆形主控键：变大 */
 .ctrl-center {
-  width: 130rpx;
-  height: 130rpx;
+  width: 150rpx; /* 从 130 放大到 150 */
+  height: 150rpx;
   border-radius: 50%;
   background: #dbeafe;
   flex-shrink: 0;
   transition: background-color 0.2s ease;
+  box-shadow: 0 8rpx 24rpx rgba(96, 165, 250, 0.2); /* 加一点阴影让它更有立体感、更显眼 */
 }
 .ctrl-center.is-paused {
   background: #bfdbfe;
 }
 
+/* 内部的暂停图标：等比放大 */
 .pause-icon {
   display: flex;
-  gap: 10rpx;
+  gap: 12rpx; /* 间距拉开 */
 }
 .pause-icon::before,
 .pause-icon::after {
   content: '';
-  width: 12rpx;
-  height: 40rpx;
+  width: 14rpx; /* 从 12 放大 */
+  height: 46rpx; /* 从 40 放大 */
   background: #1e3a8a;
-  border-radius: 3rpx;
+  border-radius: 4rpx;
 }
+
+/* 内部的播放图标：等比放大 */
 .play-icon {
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 20rpx 0 20rpx 30rpx;
+  border-width: 22rpx 0 22rpx 34rpx; /* 尺寸变大 */
   border-color: transparent transparent transparent #1e3a8a;
-  margin-left: 8rpx;
+  margin-left: 10rpx;
 }
 
 /* ========== 底部固定区域 ========== */
