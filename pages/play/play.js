@@ -233,23 +233,15 @@ Page({
     const wid = lStore.getWordId(errword.text);
 
     if (this.data.errWids.includes(wid)) {
-      wx.showToast({ title: '单词"' + errword.text + '"已在错题本', icon: 'none' });
-      if (this.data.playStatus === "running") {
-        this.clearAllTimer();
-        tts.stopSpeak();
-        this.setData({ playStatus: "paused" });
-      }
+      wx.showToast({ title: '词语"' + errword.text + '"已在错题本', icon: 'none' });
+      this.nextWord();
       return;
     }
 
     lStore.addWrongWord(wid);
     this.setData({ errWids: [...this.data.errWids, wid] });
-    wx.showToast({ title: '✅单词"' + errword.text + '"已加入错题本', icon: 'none' });
-    if (this.data.playStatus === "running") {
-      this.clearAllTimer();
-      tts.stopSpeak();
-      this.setData({ playStatus: "paused" });
-    }
+    wx.showToast({ title: '✅词语"' + errword.text + '"已加入错题本', icon: 'none' });
+    this.nextWord();
   },
 
   editCurrentWord() {
