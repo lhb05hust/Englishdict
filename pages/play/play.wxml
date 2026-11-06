@@ -1,42 +1,65 @@
 <view class="page">
-  <!-- 顶部状态信息 -->
-  <view class="top-info">
-    <view class="main-index">第{{currentWordIndex+1}}/{{totalCount}}个</view>
-    <view class="sub-status">
-      {{subStatusText}}
+  <!-- 1. 顶部进度区：居中对齐，回归宁静 -->
+  <view class="progress-header">
+    <view class="progress-track">
+      <view class="progress-fill {{playStatus === 'paused' ? 'is-paused' : ''}}"
+            style="width: {{(currentWordIndex + 1) / totalCount * 100}}%"></view>
     </view>
-    <view class="tip-volume">没听到声音？请关闭静音模式或调高音量</view>
-  </view>
-
-  <!-- 中间词语卡片 -->
-  <view class="word-card">
-    <!-- 英文在上 -->
-    <view wx:if="{{!showWord}}" class="word-hide">单词已隐藏</view>
-    <view wx:else class="word-show">{{currentWord.text}}</view>
-
-    <!-- 中文在下 -->
-    <view wx:if="{{!showCn}}" class="word-hide"></view>
-    <view wx:else class="word-show word-show-cn">{{currentWord.cn}}</view>
-  </view>
-
-  <!-- 查看词语按钮 -->
-  <view class="assist">
-    <view class="btn-assist" hover-class="btn-hover" bindtap="toggleShowCn">看释义</view>
-    <view class="btn-assist" hover-class="btn-hover" bindtap="toggleShowWord">{{ showWord ? '隐藏' : '看单词' }}</view>
-    <view class="btn-assist" hover-class="btn-hover" bindtap="add2ErrBook">加错题</view>
-  </view>
-
-  <!-- 操作按钮组 -->
-  <view class="btn-group">
-    <view class="btn-operate" hover-class="btn-hover" bindtap="prevWord">上一个</view>
-    <view class="btn-operate" hover-class="btn-hover" bindtap="nextWord">下一个</view>
-    <view class="btn-operate" hover-class="btn-hover" bindtap="togglePause">
-      {{playStatus === 'paused' ? '继续' : '暂停'}}
+    <view class="progress-meta">
+      <text class="main-index">第 {{currentWordIndex + 1}} / {{totalCount}} 个</text>
+      <text class="sub-status {{playStatus === 'paused' ? 'is-paused' : ''}}">
+        {{playStatus === 'paused' ? '已暂停' : (subStatusText || '准备中')}}
+      </text>
     </view>
-    <view class="btn-operate" hover-class="btn-hover" bindtap="editCurrentWord">改单词</view>
   </view>
 
+  <!-- 2. 核心卡片：回归浅蓝底色 -->
+  <view class="word-card {{playStatus === 'paused' ? 'is-paused' : (subStatus === 1 ? 'is-speaking' : '')}}">
+    <block wx:if="{{!showWord && !showCn}}">
+      <text class="word-hide">单词已隐藏</text>
+    </block>
+    <block wx:else>
+      <text wx:if="{{showWord}}" class="word-en">{{currentWord.text}}</text>
+      <text wx:if="{{showCn}}" class="word-cn">{{currentWord.cn || '暂无释义'}}</text>
+    </block>
+  </view>
+
+  <!-- 3. 辅助操作：回归胖药丸、去红色 -->
+  <view class="aux-row">
+    <view class="aux-btn {{showCn ? 'aux-active' : ''}}" bindtap="toggleShowCn" hover-class="btn-hover">
+      <text class="aux-label">看释义</text>
+    </view>
+    <view class="aux-btn {{showWord ? 'aux-active' : ''}}" bindtap="toggleShowWord" hover-class="btn-hover">
+      <text class="aux-label">{{showWord ? '隐藏' : '看单词'}}</text>
+    </view>
+    <view class="aux-btn" bindtap="add2ErrBook" hover-class="btn-hover">
+      <text class="aux-label">加错题</text>
+    </view>
+  </view>
+
+  <!-- 4. 主操作区：左右大圆角 + 中间大圆 -->
+  <view class="main-controls">
+    <view class="ctrl ctrl-side" bindtap="prevWord" hover-class="btn-hover">
+      <text class="ctrl-text">‹ 上一个</text>
+    </view>
+
+    <view class="ctrl ctrl-center {{playStatus === 'paused' ? 'is-paused' : ''}}"
+          bindtap="togglePause" hover-class="btn-hover">
+      <view class="pause-icon" wx:if="{{playStatus !== 'paused'}}"></view>
+      <view class="play-icon" wx:else></view>
+    </view>
+
+    <view class="ctrl ctrl-side" bindtap="nextWord" hover-class="btn-hover">
+      <text class="ctrl-text">下一个 ›</text>
+    </view>
+  </view>
+
+  <!-- 5. 底部退出区：弱化，去红色 -->
   <view class="footer">
-    <button class="confirm-btn" hover-class="btn-hover" bindtap="confirmFinish">结束听写</button>
+    <view class="footer-hint">没听到声音？请关闭静音模式或调高音量</view>
+    <view class="footer-btns">
+      <view class="footer-btn" bindtap="editCurrentWord" hover-class="btn-hover">改词语</view>
+      <view class="footer-btn" bindtap="confirmFinish" hover-class="btn-hover">结束听写</view>
+    </view>
   </view>
 </view>
