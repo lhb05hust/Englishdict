@@ -1,13 +1,12 @@
 page {
-  background-color: #f0f4f8;
+  background-color: #f5faff;
 }
 
 .page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* 底部的 260rpx 增加到 320rpx，强行把卡片( flex:1 ) 压短 5% */
-  padding: 40rpx 32rpx 320rpx; 
+  padding: 40rpx 32rpx 320rpx;
   box-sizing: border-box;
 }
 
@@ -16,36 +15,40 @@ page {
   transform: scale(0.98);
 }
 
-/* ========== 顶部进度区：紧凑靠拢 ========== */
+/* ========== 顶部进度区：对齐全站浅蓝主题 ========== */
 .progress-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 28rpx; /* 从 40rpx 缩小 */
+  margin-bottom: 28rpx;
   flex-shrink: 0;
 }
+
 .progress-track {
   width: 100%;
-  height: 8rpx;
+  height: 12rpx;
   background: #e0f2fe;
-  border-radius: 4rpx;
+  border-radius: 6rpx;
   overflow: hidden;
-  margin-bottom: 16rpx; /* 从 24rpx 缩小 */
+  margin-bottom: 16rpx;
 }
+
 .progress-fill {
   height: 100%;
-  background: #93b4e0;
-  border-radius: 4rpx;
+  background: #60a5fa;
+  border-radius: 6rpx;
   transition: width 0.35s ease, background-color 0.2s ease;
 }
+
 .progress-fill.is-paused {
   background: #cbd5e1;
 }
+
 .progress-meta {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4rpx; /* 从 12rpx 大幅缩小，让两行字紧贴 */
+  gap: 4rpx;
 }
 
 .main-index {
@@ -65,10 +68,12 @@ page {
   font-weight: 500;
 }
 
-/* ========== 核心卡片 ========== */
+/* ============================================================ */
+/* 中间卡片：严格保持第一版视觉，不再参与主题色调整               */
+/* ============================================================ */
 .word-card {
   flex: 1;
-  min-height: 360rpx; /* 稍微降低最小高度 */
+  min-height: 360rpx;
   background: #dbeafe;
   border: none;
   border-radius: 24rpx;
@@ -81,23 +86,26 @@ page {
   position: relative;
   transition: all 0.2s ease;
 }
+
 .word-card.is-speaking {
   animation: breathe 2s ease-in-out infinite;
 }
+
 @keyframes breathe {
   0%, 100% { box-shadow: 0 0 0 rgba(96, 165, 250, 0); }
   50%      { box-shadow: 0 0 30rpx rgba(96, 165, 250, 0.2); }
 }
+
 .word-card.is-paused {
   animation-play-state: paused;
   background: #e2e8f0;
 }
 
-/* --- 卡片文字：动态字号 --- */
 .word-hide {
   font-size: 44rpx;
   color: #5579aa;
 }
+
 .word-en {
   font-weight: 600;
   color: #1e3a8a;
@@ -108,6 +116,7 @@ page {
   margin-bottom: 24rpx;
   transition: font-size 0.2s;
 }
+
 .word-en.font-xxl { font-size: 96rpx; }
 .word-en.font-lg  { font-size: 76rpx; }
 .word-en.font-xl  { font-size: 56rpx; }
@@ -120,17 +129,20 @@ page {
   overflow-wrap: anywhere;
   transition: font-size 0.2s;
 }
+
 .word-cn.font-md { font-size: 40rpx; }
 .word-cn.font-sm { font-size: 32rpx; }
+/* ============================================================ */
 
-/* ========== 辅助操作 ========== */
+/* ========== 辅助操作区：保持原来的浅色点击感 ========== */
 .aux-row {
   display: flex;
   justify-content: space-between;
   gap: 20rpx;
-  margin-bottom: 30rpx; /* 从 40rpx 减小，往上提一点 */
+  margin-bottom: 30rpx;
   flex-shrink: 0;
 }
+
 .aux-btn {
   flex: 1;
   height: 90rpx;
@@ -144,20 +156,28 @@ page {
   color: #555555;
   transition: all 0.15s;
 }
+
+/* 激活态保持第一版的浅蓝高亮，不再用深色 */
 .aux-btn.aux-active {
   background: #dbeafe;
   color: #1e3a8a;
   font-weight: 500;
+  border-color: #dbeafe;
 }
 
-/* ========== 主操作区 ========== */
-/* ========== 主操作区 ========== */
+.aux-btn.aux-added {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+/* ========== 主操作区：圆形播放按钮和进度条统一变淡 ========== */
 .main-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 两端对齐，中间留空 */
+  justify-content: space-between;
   gap: 20rpx;
-  margin-bottom: 0; 
+  margin-bottom: 0;
   flex-shrink: 0;
 }
 
@@ -167,82 +187,94 @@ page {
   justify-content: center;
 }
 
-/* 左右按钮：变短（固定宽度）、变矮、字变小 */
 .ctrl-side {
-  width: 180rpx; /* 固定宽度，不再无限拉长 */
-  height: 84rpx; /* 从 110 缩到 84 */
+  width: 180rpx;
+  height: 84rpx;
   background: #ffffff;
   border: 2rpx solid #dbeafe;
-  border-radius: 42rpx; /* 高度的一半，保持药丸形 */
-  color: #666666; /* 颜色变浅一点，弱化存在感 */
+  border-radius: 42rpx;
+  color: #666666;
 }
 
 .ctrl-text {
-  font-size: 28rpx; /* 字号调小 */
+  font-size: 28rpx;
   font-weight: 500;
 }
 
-/* 中间的圆形主控键：变大 */
+/* 中间圆形按钮：比上一版更深一点，但仍属于浅蓝体系 */
+/* 中间圆形按钮：保持加深后的颜色 */
 .ctrl-center {
-  width: 150rpx; /* 从 130 放大到 150 */
+  width: 150rpx;
   height: 150rpx;
   border-radius: 50%;
-  background: #dbeafe;
+  background: #93c5fd;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background-color 0.2s ease;
-  box-shadow: 0 8rpx 24rpx rgba(96, 165, 250, 0.2); /* 加一点阴影让它更有立体感、更显眼 */
-}
-.ctrl-center.is-paused {
-  background: #bfdbfe;
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.35);
 }
 
-/* 内部的暂停图标：等比放大 */
+.ctrl-center.is-paused {
+  background: #60a5fa;
+}
+
+/* 暂停图标：补全容器尺寸，确保两条竖线稳定渲染 */
 .pause-icon {
   display: flex;
-  gap: 12rpx; /* 间距拉开 */
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  width: 60rpx;
+  height: 50rpx;
 }
+
 .pause-icon::before,
 .pause-icon::after {
   content: '';
-  width: 14rpx; /* 从 12 放大 */
-  height: 46rpx; /* 从 40 放大 */
+  width: 14rpx;
+  height: 46rpx;
   background: #1e3a8a;
   border-radius: 4rpx;
+  display: block;
 }
 
-/* 内部的播放图标：等比放大 */
+/* 播放箭头：保持不变 */
 .play-icon {
   width: 0;
   height: 0;
   border-style: solid;
-  border-width: 22rpx 0 22rpx 34rpx; /* 尺寸变大 */
+  border-width: 22rpx 0 22rpx 34rpx;
   border-color: transparent transparent transparent #1e3a8a;
-  margin-left: 10rpx;
+  margin-left: 6rpx;
 }
 
-/* ========== 底部固定区域 ========== */
+
+/* ========== 底部固定区域：对齐浅蓝主题 ========== */
 .footer {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  /* padding-top 从 16 大幅增加到 40rpx，让 footer 顶部产生巨大的呼吸留白 */
-  padding: 40rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
-  background: #f0f4f8;
-  border-top: 2rpx solid #e0eaf8;
+  padding: 24rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, #f5faff 70%, rgba(245, 250, 255, 0));
   box-sizing: border-box;
   z-index: 99;
 }
+
 .footer-hint {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #94a3b8;
   text-align: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
 }
+
 .footer-btns {
   display: flex;
   gap: 24rpx;
 }
+
 .footer-btn {
   flex: 1;
   height: 96rpx;
@@ -256,4 +288,10 @@ page {
   color: #333333;
   font-weight: 500;
   box-sizing: border-box;
+}
+
+.footer-btn.danger-btn {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #e2e8f0;
 }

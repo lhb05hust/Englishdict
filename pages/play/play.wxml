@@ -1,8 +1,8 @@
 <wxs module="utils">
   var getEnClass = function(text) {
     if (!text) return 'font-lg';
-    if (text.length >= 15) return 'font-xl';
-    if (text.length >= 8) return 'font-lg';
+    if (text.length >= 12) return 'font-xl';
+    if (text.length >= 6) return 'font-lg';
     return 'font-xxl';
   };
   var getCnClass = function(text) {
@@ -10,12 +10,13 @@
     return text.length >= 16 ? 'font-sm' : 'font-md';
   };
   module.exports = {
-    getEnClass: getEnClass,
-    getCnClass: getCnClass
+      getEnClass: getEnClass,
+      getCnClass: getCnClass
   };
 </wxs>
 
 <view class="page">
+  <!-- 顶部进度区 -->
   <view class="progress-header">
     <view class="progress-track">
       <view class="progress-fill {{playStatus === 'paused' ? 'is-paused' : ''}}"
@@ -27,7 +28,11 @@
     </view>
   </view>
 
-  <view class="word-card {{playStatus === 'paused' ? 'is-paused' : (subStatus === 1 ? 'is-speaking' : '')}}">
+  <!-- 中间卡片：严格保持第一版样式，不再参与主题色调整 -->
+  <view class="word-card {{playStatus === 'paused' ? 'is-paused' : (subStatus === 1 ? 'is-speaking' : '')}}"
+        bindtap="replayCurrent"
+        bindtouchstart="onCardTouchStart"
+        bindtouchend="onCardTouchEnd">
     <block wx:if="{{!showWord && !showCn}}">
       <text class="word-hide">单词已隐藏</text>
     </block>
@@ -37,7 +42,7 @@
     </block>
   </view>
 
-  <!-- 3. 辅助操作：轻量化 -->
+  <!-- 辅助操作区 -->
   <view class="aux-row">
     <view class="aux-btn {{showCn ? 'aux-active' : ''}}" bindtap="toggleShowCn" hover-class="btn-hover">
       <text>看释义</text>
@@ -45,34 +50,32 @@
     <view class="aux-btn {{showWord ? 'aux-active' : ''}}" bindtap="toggleShowWord" hover-class="btn-hover">
       <text>{{showWord ? '隐藏' : '看单词'}}</text>
     </view>
-    <view class="aux-btn" bindtap="add2ErrBook" hover-class="btn-hover">
-      <text>加错题</text>
+    <view class="aux-btn {{isAddedErr ? 'aux-added' : ''}}" bindtap="add2ErrBook" hover-class="btn-hover">
+      <text>{{isAddedErr ? '✓ 已加入' : '加错题'}}</text>
     </view>
   </view>
 
-  <!-- 4. 主操作区：弱化两侧 -->
+  <!-- 主操作区 -->
   <view class="main-controls">
     <view class="ctrl ctrl-side" bindtap="prevWord" hover-class="btn-hover">
       <text class="ctrl-text">‹ 上一个</text>
     </view>
-
     <view class="ctrl ctrl-center {{playStatus === 'paused' ? 'is-paused' : ''}}"
           bindtap="togglePause" hover-class="btn-hover">
       <view class="pause-icon" wx:if="{{playStatus !== 'paused'}}"></view>
       <view class="play-icon" wx:else></view>
     </view>
-
     <view class="ctrl ctrl-side" bindtap="nextWord" hover-class="btn-hover">
       <text class="ctrl-text">下一个 ›</text>
     </view>
   </view>
 
-  <!-- 5. 底部退出区 -->
+  <!-- 底部退出区 -->
   <view class="footer">
     <view class="footer-hint">没听到声音？请关闭静音模式或调高音量</view>
     <view class="footer-btns">
-      <view class="footer-btn" bindtap="editCurrentWord" hover-class="btn-hover">改词语</view>
-      <view class="footer-btn" bindtap="confirmFinish" hover-class="btn-hover">结束听写</view>
+      <view class="footer-btn" bindtap="editCurrentWord" hover-class="btn-hover">改单词</view>
+      <view class="footer-btn danger-btn" bindtap="confirmFinish" hover-class="btn-hover">结束听写</view>
     </view>
   </view>
 </view>
