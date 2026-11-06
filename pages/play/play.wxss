@@ -1,4 +1,3 @@
-/* 如果你之前的 wxss 已经替换了，这部分保持不变即可 */
 page {
   background-color: #f0f4f8;
 }
@@ -7,7 +6,8 @@ page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 40rpx 32rpx 260rpx;
+  /* 底部的 260rpx 增加到 320rpx，强行把卡片( flex:1 ) 压短 5% */
+  padding: 40rpx 32rpx 320rpx; 
   box-sizing: border-box;
 }
 
@@ -16,12 +16,12 @@ page {
   transform: scale(0.98);
 }
 
-/* ========== 顶部进度区 ========== */
+/* ========== 顶部进度区：紧凑靠拢 ========== */
 .progress-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 28rpx; /* 从 40rpx 缩小 */
   flex-shrink: 0;
 }
 .progress-track {
@@ -30,7 +30,7 @@ page {
   background: #e0f2fe;
   border-radius: 4rpx;
   overflow: hidden;
-  margin-bottom: 24rpx;
+  margin-bottom: 16rpx; /* 从 24rpx 缩小 */
 }
 .progress-fill {
   height: 100%;
@@ -45,18 +45,21 @@ page {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12rpx;
+  gap: 4rpx; /* 从 12rpx 大幅缩小，让两行字紧贴 */
 }
+
 .main-index {
   font-size: 52rpx;
   font-weight: bold;
   color: #222222;
 }
+
 .sub-status {
   font-size: 32rpx;
   color: #555555;
   transition: color 0.2s ease;
 }
+
 .sub-status.is-paused {
   color: #1e3a8a;
   font-weight: 500;
@@ -65,7 +68,7 @@ page {
 /* ========== 核心卡片 ========== */
 .word-card {
   flex: 1;
-  min-height: 400rpx;
+  min-height: 360rpx; /* 稍微降低最小高度 */
   background: #dbeafe;
   border: none;
   border-radius: 24rpx;
@@ -95,7 +98,6 @@ page {
   font-size: 44rpx;
   color: #5579aa;
 }
-
 .word-en {
   font-weight: 600;
   color: #1e3a8a;
@@ -126,7 +128,7 @@ page {
   display: flex;
   justify-content: space-between;
   gap: 20rpx;
-  margin-bottom: 40rpx;
+  margin-bottom: 30rpx; /* 从 40rpx 减小，往上提一点 */
   flex-shrink: 0;
 }
 .aux-btn {
@@ -154,7 +156,7 @@ page {
   align-items: center;
   justify-content: space-between;
   gap: 24rpx;
-  margin-bottom: 40rpx;
+  margin-bottom: 0; /* 干掉底部边距，因为给 page padding-bottom 留了巨大空间 */
   flex-shrink: 0;
 }
 .ctrl {
@@ -208,16 +210,18 @@ page {
   margin-left: 8rpx;
 }
 
-/* ========== 底部 ========== */
+/* ========== 底部固定区域 ========== */
 .footer {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 16rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  /* padding-top 从 16 大幅增加到 40rpx，让 footer 顶部产生巨大的呼吸留白 */
+  padding: 40rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
   background: #f0f4f8;
   border-top: 2rpx solid #e0eaf8;
   box-sizing: border-box;
+  z-index: 99;
 }
 .footer-hint {
   font-size: 24rpx;
