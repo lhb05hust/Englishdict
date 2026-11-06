@@ -1,13 +1,13 @@
 <view class="container">
   <view class="header">
     <text class="title">{{bFromPlay?'检查单词':'听写记录'}}</text>
-    <text class="count">共 {{wordList.length}} 个词</text>
+    <text class="count" space="ensp"> 共 {{wordList.length}} 个词</text>
   </view>
 
   <!-- 提示语 -->
   <view class="tips-row">
     <text class="tip-text">{{bFromPlay?'请对照清单核对听写结果，记得标错哦':timeDisplay}}</text>
-    <text class="count errText">错 {{errCount}} 个</text>
+    <text class="count errText" space="ensp">  错 {{errCount}} 个</text>
   </view>
 
   <!-- 网格列表 -->

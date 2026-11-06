@@ -29,12 +29,20 @@ Page({
     // 将 Map 或 Object 转换为数组，并按时间倒序排列（最新的在前面）
     const list = Object.values(rawRecords).sort((a, b) => b.timestamp - a.timestamp);
 
-    // 处理时间显示格式
-    const formattedList = list.map(item => ({
-      ...item,
-      timeDisplay: this.formatTimeRelative(item.timestamp),
-      wordCount: item.wordList ? item.wordList.length : 0
-    }));
+    // 处理时间显示格式和未完成状态
+    const formattedList = list.map(item => {
+      const isOngoing = item.status === 'ongoing';
+      const total = item.wordList ? item.wordList.length : 0;
+      // 如果是未完成，获取断点位置；如果是已完成，进度就是总词数
+      const current = isOngoing ? (item.startIndex || 0) : total;
+
+      return {
+        ...item,
+        timeDisplay: this.formatTimeRelative(item.timestamp),
+        wordCount: total,
+        isOngoing: isOngoing,
+      };
+    });
 
     this.setData({
       recordList: formattedList
@@ -77,23 +85,26 @@ Page({
   // 点击某条记录，跳转到详情页进行复习
   onRecordTap(e) {
     const rId = e.currentTarget.dataset.rid;
-    let recordDict = lStore.getDictRecordById(rId);
+    const recordDict = lStore.getDictRecordById(rId);
     if (!recordDict) {
-      console.log("无该id=${rId}的听写记录");
-      wx.showToast({
-        title: '数据出错',
-      });
-      return;   // ← 修复：防止 recordDict 为空时下一行报错
+      wx.showToast({ title: '数据出错', icon: 'none' });
+      return;
     }
-    let timeDisplay = this.formatTimeRelative(recordDict.timestamp);
-    getApp().globalData.dictConfig = {
-      wordList: recordDict.wordList,
-      errCount: recordDict.errCount,
-      timeDisplay: timeDisplay,
-    };
-    wx.navigateTo({
-      url: `/pages/result/result`,
-    });
+    const timeDisplay = this.formatTimeRelative(recordDict.timestamp);
+
+    if (recordDict.status === 'ongoing') {
+      wx.navigateTo({
+        url: `/pages/dictation/dictation?rId=${rId}`
+      });
+    } else {
+      // 已完成 -> 去结果页
+      getApp().globalData.dictConfig = {
+        wordList: recordDict.wordList,
+        errCount: recordDict.errCount,
+        timeDisplay: timeDisplay,
+      };
+      wx.navigateTo({ url: `/pages/result/result` });
+    }
   },
 
   onShareAppMessage(res) {

@@ -29,14 +29,21 @@
           <view class="time-row">
             <text class="time-text">{{item.timeDisplay}}</text>
           </view>
-          <view class="count-row">
-            <text class="count-text">听写单词 {{item.wordCount}} 个，错 </text>
-            <text class="err-num">{{item.errCount}}</text>
-            <text class="count-text"> 个</text>
+          <view class="count-row" style="display: flex; align-items: center;">
+            <block wx:if="{{item.isOngoing}}">
+              <text class="count-text" style="margin-right: 12rpx;">共 {{item.wordCount}} 个单词</text>
+              <text class="ongoing-tag">未完成</text>
+            </block>
+            <block wx:else>
+              <text class="count-text" space="ensp">听写单词 {{item.wordCount}} 个，错 </text>
+              <text class="err-num">{{item.errCount}}</text>
+              <text class="count-text" space="ensp"> 个</text>
+            </block>
           </view>
         </view>
         <view class="card-right">
-          <van-icon name="arrow" class="arrow-icon" size="26rpx" />
+          <!-- 【修改】根据状态切换图标 -->
+          <van-icon name="{{item.isOngoing ? 'play-circle-o' : 'arrow'}}" class="arrow-icon" size="26rpx" />
         </view>
       </view>
 

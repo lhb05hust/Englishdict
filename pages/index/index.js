@@ -75,11 +75,17 @@ Page({
     const top5 = list.slice(0, 3);
 
     const recentData = top5.map(item => {
+      const isOngoing = item.status === 'ongoing';
+      const total = item.wordList ? item.wordList.length : 0;
+      // 如果是未完成，获取断点位置；已完成就是总词数
+      const current = isOngoing ? (item.startIndex || 0) : total;
+
       return {
         rId: item.rId,
         timeDisplay: this.formatTimeRelative(item.timestamp),
-        wordCount: item.wordList ? item.wordList.length : 0,
-        errCount: item.errCount ?? 0
+        wordCount: total,
+        errCount: item.errCount ?? 0,
+        isOngoing: isOngoing,
       };
     });
 
@@ -126,18 +132,26 @@ Page({
     const rId = e.currentTarget.dataset.rid;
     const recordDict = lStore.getDictRecordById(rId);
     if (!recordDict) {
-      wx.showToast({ title: '数据出错' });
+      wx.showToast({ title: '数据出错', icon: 'none' });
       return;
     }
     const timeDisplay = this.formatTimeRelative(recordDict.timestamp);
-    getApp().globalData.dictConfig = {
-      wordList: recordDict.wordList,
-      errCount: recordDict.errCount,
-      timeDisplay: timeDisplay,
-    };
-    wx.navigateTo({
-      url: `/pages/result/result`,
-    });
+
+    // 【分流逻辑】
+    if (recordDict.status === 'ongoing') {
+      // 未完成 -> 去准备页，并带上 rId
+      wx.navigateTo({
+        url: `/pages/dictation/dictation?rId=${rId}`
+      });
+    } else {
+      // 已完成 -> 去结果页
+      getApp().globalData.dictConfig = {
+        wordList: recordDict.wordList,
+        errCount: recordDict.errCount,
+        timeDisplay: timeDisplay,
+      };
+      wx.navigateTo({ url: `/pages/result/result` });
+    }
   },
 
   goPhotoDict() {

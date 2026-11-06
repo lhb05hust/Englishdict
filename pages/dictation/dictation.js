@@ -6,8 +6,8 @@ function normText(s) {
     .replace(/[\r\n]+/g, ' ')
     .trim()
     .toLowerCase()
-    .replace(/\s*-\s*/g, '-') // 【新增】把 "broadly- educated" 变成 "broadly-educated"
-    .replace(/\s*\'\s*/g, "'") // 【新增】把 "don ' t" 变成 "don't"
+    .replace(/\s*-\s*/g, '-')
+    .replace(/\s*\'\s*/g, "'")
     .replace(/\s{2,}/g, ' ');
 }
 
@@ -31,7 +31,6 @@ function extractWordList(ocrData) {
 Page({
   data: {
     wordList: [],
-
     isDragging: false,
     draggingId: null,
     ghostX: 0,
@@ -40,47 +39,58 @@ Page({
     ghostH: 0,
     ghostItem: null,
     ghostIndex: 0,
-
-    order: 'sequential',   // 报读顺序：'sequential' | 'random'
-    times: 2,              // 报读次数：1 | 2 | 3
-    interval: 5,           // 间隔时间：3 | 5 | 8 | 'custom'
+    order: 'sequential',
+    times: 2,
+    interval: 5,
     customSeconds: 10,
-
-    takeCount: 0,          // 听写数量
-    totalWords: 0,         // 总词数
-
+    takeCount: 0,
+    totalWords: 0,
     showAddModal: false,
     addInput: '',
     parsedWords: [],
     skippedCount: 0,
     keyboardHeight: 0,
-
     showAdd: false,
-    showSettings: false    // 听写规则折叠状态：默认收起
+    showSettings: false
   },
 
   itemRects: [],
   dragOffsetX: 0,
   dragOffsetY: 0,
 
+  // 存储进入页面时的初始状态
+  originalRId: '',
+  originalWordList: [],
+
   onLoad(options) {
+    // 只记录传进来的 rId
+    this.originalRId = options.rId || '';
+
     this.setData({ showAdd: options.showAdd || false });
   
-    // 优先读全局变量（从教材页传过来的词表）
     let rawList = [];
     const app = getApp();
+    
     if (app.globalData.tempWordList && app.globalData.tempWordList.length > 0) {
+      // 1. 从全局变量读取（教材页跳转）
       rawList = app.globalData.tempWordList;
-      app.globalData.tempWordList = null;  // 用完立即清空
-    } else {
-      // 兼容原有 URL 传参路径（OCR / 手动 / 错题本等）
+      app.globalData.tempWordList = null;
+    } else if (options.words) {
+      // 2. 从 URL 传参读取（结果页重听错词等）
       let ocrData = null;
       try {
-        ocrData = JSON.parse(options.words || 'null');
+        ocrData = JSON.parse(options.words);
       } catch (e) {
         ocrData = null;
       }
       rawList = extractWordList(ocrData);
+    } else if (this.originalRId) {
+      // 3. 【核心修复】从缓存里读取历史未完成的记录
+      const record = lStore.getDictRecordById(this.originalRId);
+      if (record && record.wordList) {
+        // 因为下面 map 里写的是 item.en || item.text，所以直接把 wordList 赋值即可
+        rawList = record.wordList; 
+      }
     }
   
     const baseTime = Date.now();
@@ -109,7 +119,6 @@ Page({
     }
   },
 
-  // 切换听写规则折叠面板
   toggleSettings() {
     this.setData({ showSettings: !this.data.showSettings });
   },
@@ -125,7 +134,6 @@ Page({
     });
   },
 
-  // ========== 拖拽开始 ==========
   onDragStart(e) {
     const index = e.currentTarget.dataset.index;
     const item = this.data.wordList[index];
@@ -133,7 +141,6 @@ Page({
     const touch = e.touches && e.touches[0];
     if (!touch) return;
 
-    // 每次拖拽前重新测量一次 rect
     this.updateItemRects(() => {
       const rect = this.itemRects[index];
       if (!rect) return;
@@ -154,10 +161,8 @@ Page({
     });
   },
 
-  // ========== 拖拽中 ==========
   onDragMove(e) {
     if (!this.data.isDragging) return;
-
     const touch = e.touches && e.touches[0];
     if (!touch) return;
     const newX = touch.clientX - this.dragOffsetX;
@@ -171,51 +176,33 @@ Page({
     let targetIndex = -1;
     for (let i = 0; i < this.itemRects.length; i++) {
       const r = this.itemRects[i];
-      if (
-        centerX >= r.left &&
-        centerX <= r.right &&
-        centerY >= r.top &&
-        centerY <= r.bottom
-      ) {
+      if (centerX >= r.left && centerX <= r.right && centerY >= r.top && centerY <= r.bottom) {
         targetIndex = i;
         break;
       }
     }
 
     if (targetIndex !== -1) {
-      const currentIndex = this.data.wordList.findIndex(
-        (it) => it.wordId === this.data.draggingId
-      );
+      const currentIndex = this.data.wordList.findIndex((it) => it.wordId === this.data.draggingId);
       if (targetIndex !== currentIndex) {
         this.swapItems(currentIndex, targetIndex);
       }
     }
   },
 
-  // ========== 交换数据 ==========
   swapItems(fromIndex, toIndex) {
     const wordList = [...this.data.wordList];
     const temp = wordList[fromIndex];
     wordList[fromIndex] = wordList[toIndex];
     wordList[toIndex] = temp;
-
     this.setData({ wordList });
-
-    wx.nextTick(() => {
-      this.updateItemRects();
-    });
+    wx.nextTick(() => { this.updateItemRects(); });
   },
 
-  // ========== 拖拽结束 ==========
   onDragEnd() {
-    this.setData({
-      isDragging: false,
-      draggingId: null,
-      ghostItem: null,
-    });
+    this.setData({ isDragging: false, draggingId: null, ghostItem: null });
   },
 
-  // 1. 删除词语
   onDelete(e) {
     const index = e.currentTarget.dataset.index;
     const list = this.data.wordList;
@@ -225,18 +212,10 @@ Page({
     if (newTakeCount > newTotal || newTakeCount == this.data.totalWords) {
       newTakeCount = newTotal;
     }
-    this.setData({
-      wordList: list,
-      totalWords: newTotal,
-      takeCount: newTakeCount,
-    });
-
-    wx.nextTick(() => {
-      this.updateItemRects();
-    });
+    this.setData({ wordList: list, totalWords: newTotal, takeCount: newTakeCount });
+    wx.nextTick(() => { this.updateItemRects(); });
   },
 
-  // 2. 点击英文单词修改
   onEditWord(e) {
     const index = e.currentTarget.dataset.index;
     const oldWord = this.data.wordList[index].text;
@@ -261,7 +240,6 @@ Page({
     });
   },
 
-  // 3. 点击中文释义修改
   onEditCn(e) {
     const index = e.currentTarget.dataset.index;
     const oldCn = this.data.wordList[index].cn || '';
@@ -280,24 +258,14 @@ Page({
     });
   },
 
-  onOrderChange(e) {
-    const value = e.currentTarget.dataset.value;
-    this.setData({ order: value });
-  },
-
-  onTimesChange(e) {
-    const value = parseInt(e.currentTarget.dataset.value, 10);
-    this.setData({ times: value });
-  },
+  onOrderChange(e) { this.setData({ order: e.currentTarget.dataset.value }); },
+  onTimesChange(e) { this.setData({ times: parseInt(e.currentTarget.dataset.value, 10) }); },
 
   onIntervalChange(e) {
     const value = e.currentTarget.dataset.value;
     const realValue = value === 'custom' ? 'custom' : parseInt(value, 10);
     this.setData({ interval: realValue });
-
-    if (realValue === 'custom') {
-      this.onCustomTap();
-    }
+    if (realValue === 'custom') this.onCustomTap();
   },
 
   onCustomTap() {
@@ -310,75 +278,67 @@ Page({
       success: (res) => {
         if (res.confirm && res.content) {
           const seconds = parseInt(res.content, 10);
-          if (seconds > 0) {
-            this.setData({ customSeconds: seconds });
-          } else {
-            wx.showToast({ title: '请输入有效的秒数', icon: 'none' });
-          }
+          if (seconds > 0) this.setData({ customSeconds: seconds });
+          else wx.showToast({ title: '请输入有效的秒数', icon: 'none' });
         }
       },
     });
   },
 
-  onTakeCountChanging(e) {
-    this.setData({ takeCount: e.detail.value });
-  },
+  onTakeCountChanging(e) { this.setData({ takeCount: e.detail.value }); },
+  onTakeCountChange(e) { this.setData({ takeCount: e.detail.value }); },
 
-  onTakeCountChange(e) {
-    this.setData({ takeCount: e.detail.value });
-  },
-
-  // 确认并开始
   onConfirm() {
     if (this.data.wordList.length === 0) {
       wx.showToast({ title: '请至少添加一个单词', icon: 'none' });
       return;
     }
-
+  
+    // 1. 先把词全部入库（幂等：已存在的会 merge cn，不存在的会新建并生成 w_xxx）
+    lStore.addWordsBatch(
+      this.data.wordList.map(item => ({ text: item.text, cn: item.cn || '' }))
+    );
+  
+    // 2. 构建带真实 wordId 的 wordList
+    //    getWordId 内部会 normText，与 addWordsBatch 入库时的 key 口径一致
+    const finalWordList = this.data.wordList.map(item => ({
+      wordId: lStore.getWordId(item.text) || item.wordId,  // 兜底：极端情况保留 tmp_
+      text: item.text,
+      cn: item.cn || ''
+    }));
+  
+    // 3. 写入记录（此刻 wordId 已是 w_xxx）
+    let finalRId = '';
+    if (this.originalRId) {
+      lStore.updateDictRecord(this.originalRId, 0, 'ongoing', finalWordList);
+      finalRId = this.originalRId;
+    } else {
+      finalRId = lStore.addDictRecord(finalWordList, 0, 'ongoing');
+    }
+  
     const takeCount = Math.min(this.data.takeCount, this.data.totalWords);
-    const gap = this.data.interval === 'custom'
-      ? this.data.customSeconds
-      : this.data.interval;
-
+    const gap = this.data.interval === 'custom' ? this.data.customSeconds : this.data.interval;
+  
+    // 4. 传给 play 的也用 finalWordList（保持一致，play 里 finalList 展开后就是 w_xxx）
     getApp().globalData.dictConfig = {
-      wordList: this.data.wordList,
+      rId: finalRId,
+      wordList: finalWordList,
       readOrder: this.data.order,
       readTimes: this.data.times,
       gap: gap,
-      takeCount: takeCount,
+      takeCount: takeCount
     };
-
+  
     wx.navigateTo({ url: "/pages/play/play" });
-
-    setTimeout(() => {
-      lStore.addWordsBatch(
-        this.data.wordList.map((item) => ({ text: item.text, cn: item.cn || '' }))
-      );
-    }, 30);
+  
+    // 原来的 setTimeout(addWordsBatch) 可以删掉了 —— 上面已经同步做过了
   },
 
-  onShareAppMessage(res) {
-    return {
-      title: getApp().globalData.appName,
-      path: "/pages/index/index"
-    };
-  },
+  onShareAppMessage(res) { return { title: getApp().globalData.appName, path: "/pages/index/index" }; },
+  onShareTimeline() { return { title: getApp().globalData.appName, query: "" }; },
 
-  onShareTimeline() {
-    return {
-      title: getApp().globalData.appName,
-      query: ""
-    };
-  },
-
-  // ========== 3. 新增词语（点击卡片，打开批量弹窗） ==========
   onAddNew() {
-    this.setData({
-      showAddModal: true,
-      addInput: '',
-      parsedWords: [],
-      skippedCount: 0,
-    });
+    this.setData({ showAddModal: true, addInput: '', parsedWords: [], skippedCount: 0 });
   },
 
   onPasteFromClipboard() {
@@ -386,85 +346,41 @@ Page({
       success: (res) => {
         const clipText = (res.data || '').trim();
         if (!clipText) {
-          wx.showToast({
-            title: '请先复制单词再来粘贴',
-            icon: 'none',
-            duration: 2000,
-          });
+          wx.showToast({ title: '请先复制单词再来粘贴', icon: 'none', duration: 2000 });
           return;
         }
-
         const oldVal = this.data.addInput || '';
         const merged = oldVal ? (oldVal + '\n' + clipText) : clipText;
         const input = merged.slice(0, 150);
-
         const { valid, skipped } = this.parseInput(input);
-        this.setData({
-          addInput: input,
-          parsedWords: valid,
-          skippedCount: skipped,
-        });
+        this.setData({ addInput: input, parsedWords: valid, skippedCount: skipped });
       },
-      fail: () => {
-        wx.showToast({
-          title: '请先复制单词再来粘贴',
-          icon: 'none',
-          duration: 2000,
-        });
-      },
+      fail: () => { wx.showToast({ title: '请先复制单词再来粘贴', icon: 'none', duration: 2000 }); },
     });
   },
 
-  /**
-   * 解析输入文本，返回 { valid, skipped }
-   * 英文规则：
-   * - 用换行 / 逗号 / 分号 / 顿号切分（空格视为短语的一部分，不拆）
-   * - 每段 trim、压空格、转小写
-   * - 只保留：以字母开头，由字母 / 空格 / 连字符 / 撇号组成，长度 1-40
-   */
   parseInput(text) {
     if (!text) return { valid: [], skipped: 0 };
-
-    const parts = text
-      .split(/[\n,，、;；]+/)
-      .map((w) => normText(w))
-      .filter((w) => w);
-
+    const parts = text.split(/[\n,，、;；]+/).map((w) => normText(w)).filter((w) => w);
     if (parts.length === 0) return { valid: [], skipped: 0 };
-
     const valid = [];
     let skipped = 0;
     const re = /^[a-z][a-z\s'\-]*$/;
-
     for (const w of parts) {
-      if (w.length <= 40 && re.test(w)) {
-        valid.push(w);
-      } else {
-        skipped++;
-      }
+      if (w.length <= 40 && re.test(w)) valid.push(w);
+      else skipped++;
     }
-
     return { valid, skipped };
   },
 
   onAddInputChange(e) {
     const value = e.detail.value;
     const { valid, skipped } = this.parseInput(value);
-    this.setData({
-      addInput: value,
-      parsedWords: valid,
-      skippedCount: skipped,
-    });
+    this.setData({ addInput: value, parsedWords: valid, skippedCount: skipped });
   },
 
   onCloseAddModal() {
-    this.setData({
-      showAddModal: false,
-      addInput: '',
-      parsedWords: [],
-      skippedCount: 0,
-      keyboardHeight: 0,
-    });
+    this.setData({ showAddModal: false, addInput: '', parsedWords: [], skippedCount: 0, keyboardHeight: 0 });
   },
 
   noop() {},
@@ -475,7 +391,6 @@ Page({
       wx.showToast({ title: '请输入单词', icon: 'none' });
       return;
     }
-
     const existingTexts = this.data.wordList.map((w) => w.text);
     const seen = new Set();
     const uniqueNewWords = [];
@@ -485,63 +400,30 @@ Page({
         seen.add(w);
       }
     }
-
     if (uniqueNewWords.length === 0) {
       wx.showToast({ title: '单词已全部存在', icon: 'none' });
       return;
     }
-
     const baseTime = Date.now();
-    const newItems = uniqueNewWords.map((text, idx) => ({
-      wordId: 'tmp_' + baseTime + '_' + idx,
-      text: text,
-      cn: '',
-    }));
-
+    const newItems = uniqueNewWords.map((text, idx) => ({ wordId: 'tmp_' + baseTime + '_' + idx, text: text, cn: '' }));
     const list = [...this.data.wordList, ...newItems];
     const newTotal = list.length;
     let newTakeCount = this.data.takeCount;
 
-    if (this.data.takeCount === this.data.totalWords) {
-      newTakeCount = newTotal;
-    } else if (newTakeCount > newTotal) {
-      newTakeCount = newTotal;
-    }
+    if (this.data.takeCount === this.data.totalWords) newTakeCount = newTotal;
+    else if (newTakeCount > newTotal) newTakeCount = newTotal;
 
-    this.setData({
-      wordList: list,
-      totalWords: newTotal,
-      takeCount: newTakeCount,
-    });
-
+    this.setData({ wordList: list, totalWords: newTotal, takeCount: newTakeCount });
     this.onCloseAddModal();
-
-    wx.nextTick(() => {
-      this.updateItemRects();
-    });
+    wx.nextTick(() => { this.updateItemRects(); });
 
     const dupCount = newWords.length - uniqueNewWords.length;
     let toastMsg = `已添加 ${uniqueNewWords.length} 个单词`;
-    if (dupCount > 0) {
-      toastMsg += `，跳过 ${dupCount} 个重复`;
-    }
+    if (dupCount > 0) toastMsg += `，跳过 ${dupCount} 个重复`;
     wx.showToast({ title: toastMsg, icon: 'none' });
   },
 
-  onClearInput() {
-    this.setData({
-      addInput: '',
-      parsedWords: [],
-      skippedCount: 0,
-    });
-  },
-
-  onTextareaFocus(e) {
-    const h = (e.detail && e.detail.height) || 0;
-    this.setData({ keyboardHeight: h });
-  },
-
-  onTextareaBlur() {
-    this.setData({ keyboardHeight: 0 });
-  },
+  onClearInput() { this.setData({ addInput: '', parsedWords: [], skippedCount: 0 }); },
+  onTextareaFocus(e) { this.setData({ keyboardHeight: (e.detail && e.detail.height) || 0 }); },
+  onTextareaBlur() { this.setData({ keyboardHeight: 0 }); },
 })

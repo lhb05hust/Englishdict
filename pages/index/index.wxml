@@ -94,14 +94,29 @@
           hover-class="cell-hover"
         >
           <view class="recent-inner-left">
-            <view class="recent-time">{{item.timeDisplay}}</view>
-            <view class="recent-desc">
-              <text>听写单词 {{item.wordCount}} 个，错 </text>
-              <text class="recent-err">{{item.errCount}}</text>
-              <text> 个</text>
+            <view class="recent-time">
+              {{item.timeDisplay}}
+            </view>
+            <view class="recent-desc" style="display: flex; align-items: center;">
+              <block wx:if="{{item.isOngoing}}">
+                <text style="margin-right: 12rpx;">共 {{item.wordCount}} 个单词</text>
+                <text class="ongoing-tag">未完成</text>
+              </block>
+              <block wx:else>
+                <text space="ensp">听写单词 {{item.wordCount}} 个，错 </text>
+                <text class="recent-err">{{item.errCount}}</text>
+                <text space="ensp"> 个</text>
+              </block>
             </view>
           </view>
-          <view class="recent-inner-right">></view>
+          <view class="recent-inner-right">
+            <!-- 如果是未完成，画一个播放小圆圈 -->
+            <view wx:if="{{item.isOngoing}}" class="css-play-icon">
+              <view class="css-play-triangle"></view>
+            </view>
+            <!-- 如果已完成，依然是灰色箭头 -->
+            <text wx:else class="arrow-text">></text>
+          </view>
         </view>
       </view>
 

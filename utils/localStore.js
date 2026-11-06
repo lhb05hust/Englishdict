@@ -261,11 +261,13 @@ function getTextById(id) {
 }
 
 /**
- * 添加一条听写记录（自动维护最近 100 条的滑动窗口）
- * @param {Array} wordList - 听写词语列表 [{wordId, text, isError}...]
+ * 添加一条听写记录（默认状态为 ongoing 进行中）
+ * @param {Array} wordList - 听写词语列表 [{wordId, text, cn, isErr}...]
  * @param {number} errCount - 错误词语数量
+ * @param {string} status - 状态：'ongoing' | 'completed'
+ * @returns {string} 新记录的 rId
  */
-function addDictRecord(wordList, errCount) {
+function addDictRecord(wordList, errCount = 0, status = 'ongoing') {
   if (!wordList || wordList.length <= 0) {
     return null;
   }
@@ -276,14 +278,34 @@ function addDictRecord(wordList, errCount) {
     rId: rId,
     wordList: wordList,
     errCount: errCount,
+    status: status,
     timestamp: Date.now()
   };
 
-  const keys = Object.keys(recordsMap);
-  if (keys.length > MAX_RECORDS) {
+  // ================== 【新增：ongoing 专属限制】 ==================
+  // 防止用户频繁点“开始”然后退出，产生一堆无意义的废草稿挤爆空间
+  if (status === 'ongoing') {
+    const ongoingKeys = Object.keys(recordsMap).filter(k => recordsMap[k].status === 'ongoing');
+    const MAX_ONGOING = 5;
+    
+    if (ongoingKeys.length > MAX_ONGOING) {
+      // 按时间正序排列（最老的排在前面）
+      ongoingKeys.sort((a, b) => recordsMap[a].timestamp - recordsMap[b].timestamp);
+      // 算出要删几个，然后把最老的删掉
+      const deleteCount = ongoingKeys.length - MAX_ONGOING;
+      for (let i = 0; i < deleteCount; i++) {
+        delete recordsMap[ongoingKeys[i]];
+      }
+    }
+  }
+  // ==============================================================
+
+  // 原有的全局滑动窗口清理（兜底防爆）
+  const newKeys = Object.keys(recordsMap);
+  if (newKeys.length > MAX_RECORDS) {
     let oldestRId = null;
     let oldestTime = Infinity;
-    for (const key of keys) {
+    for (const key of newKeys) {
       if (recordsMap[key].timestamp < oldestTime) {
         oldestTime = recordsMap[key].timestamp;
         oldestRId = key;
@@ -294,13 +316,70 @@ function addDictRecord(wordList, errCount) {
     }
   }
 
-  wx.setStorage({
-    key: stg_key.dict_rcds,
-    data: recordsMap,
-    fail: (err) => console.error('保存听写记录失败:', err)
-  });
+  wx.setStorageSync(stg_key.dict_rcds, recordsMap);
+  return rId;
+}
 
-  return recordsMap[rId];
+/**
+ * 更新听写记录（用于听写结束或中途保存进度）
+ * @param {string} rId - 记录ID
+ * @param {number} errCount - 最新错误数量
+ * @param {string} status - 'ongoing' | 'completed'
+ * @param {Array|null} newWordList - 最新的词表（带 isErr 状态）
+ */
+function updateDictRecord(rId, errCount, status = 'completed', newWordList = null) {
+  if (!rId) return false;
+  const recordsMap = getDictRecords();
+  if (!recordsMap[rId]) return false;
+
+  recordsMap[rId].errCount = errCount;
+  recordsMap[rId].status = status;
+  recordsMap[rId].timestamp = Date.now(); // 刷新时间，让最新操作的记录排在前面
+  
+  // 【核心修改】如果有传新词表，直接覆盖
+  if (newWordList) {
+    recordsMap[rId].wordList = newWordList;
+  }
+
+  wx.setStorageSync(stg_key.dict_rcds, recordsMap);
+  return true;
+}
+
+/**
+ * 查找是否有完全相同的 ongoing 记录（用于准备页复用）
+ * @param {Array} wordList - 当前准备听写的词语列表
+ * @returns {string|null} 已存在的 rId，如果没有则返回 null
+ */
+function findOngoingRecord(wordList) {
+  if (!wordList || wordList.length === 0) return null;
+  
+  const recordsMap = getDictRecords();
+  const keys = Object.keys(recordsMap);
+  
+  // 倒序遍历（优先匹配最近创建的草稿）
+  for (let i = keys.length - 1; i >= 0; i--) {
+    const record = recordsMap[keys[i]];
+    
+    // 1. 只比对状态为 ongoing 的记录
+    if (record.status !== 'ongoing') continue;
+    
+    // 2. 长度不同，直接跳过
+    if (record.wordList.length !== wordList.length) continue;
+    
+    // 3. 逐个比对 wordId
+    let isSame = true;
+    for (let j = 0; j < wordList.length; j++) {
+      if (record.wordList[j].wordId !== wordList[j].wordId) {
+        isSame = false;
+        break;
+      }
+    }
+    
+    // 如果完全一样，返回旧记录的 rId
+    if (isSame) return record.rId;
+  }
+  
+  return null;
 }
 
 /**
@@ -448,4 +527,6 @@ module.exports = {
   saveEnSelected,
   getEnSelected,
   clearEnSelected,
+  updateDictRecord,   // 新增
+  findOngoingRecord   // 新增
 }

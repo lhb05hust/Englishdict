@@ -3,16 +3,12 @@ const tts = require("../../utils/tts");
 const lStore = require("../../utils/localStore");
 const { throttle } = require("../../utils/tool");
 const KeepScreenUtil = require("../../utils/keepScreenUtil");
-KeepScreenUtil.init({
-  showTip: false,
-});
+KeepScreenUtil.init({ showTip: false });
 
-// ======================状态枚举常量（统一管理）======================
-const STATUS_PLAYING = 1;         //正在报读
-const STATUS_PREPARE_NEXT_ROUND = 2; //准备下一遍
-const STATUS_GAP = 3;             //间隔中
+const STATUS_PLAYING = 1;
+const STATUS_PREPARE_NEXT_ROUND = 2;
+const STATUS_GAP = 3;
 
-// 新增：全局请求令牌，用于废弃过期的TTS回调
 let requestVersion = 0;
 
 Page({
@@ -30,6 +26,7 @@ Page({
     showWord: false,
     showCn: false,
     currentWord: {},
+    rId: "", // 保存当前任务 ID
   },
 
   _timer: null,
@@ -37,14 +34,10 @@ Page({
   getSubStatusText(status, currentRound, totalRound) {
     const suffix = ` · 第${currentRound}/${totalRound}遍`;
     switch (status) {
-      case STATUS_PLAYING:
-        return "正在报读" + suffix;
-      case STATUS_PREPARE_NEXT_ROUND:
-        return "准备下一遍" + suffix;
-      case STATUS_GAP:
-        return "间隔中" + suffix;
-      default:
-        return "";
+      case STATUS_PLAYING: return "正在报读" + suffix;
+      case STATUS_PREPARE_NEXT_ROUND: return "准备下一遍" + suffix;
+      case STATUS_GAP: return "间隔中" + suffix;
+      default: return "";
     }
   },
 
@@ -61,7 +54,7 @@ Page({
       return;
     }
 
-    let { wordList, readOrder, readTimes, gap, takeCount } = dictConfig;
+    let { wordList, readOrder, readTimes, gap, takeCount, rId } = dictConfig;
     let list = [...wordList];
     if (takeCount < list.length) {
       list = list.slice(0, takeCount);
@@ -79,17 +72,18 @@ Page({
       totalCount: list.length,
       gapSecond: gap,
       readRoundTotal: readTimes,
-      currentWordIndex: 0,
+      currentWordIndex: 0, // 永远从 0 开始
       currentReadRound: 1,
       playStatus: "running",
       showWord: false,
       showCn: false,
       subStatus: initSubStatus,
       subStatusText: initText,
-      currentWord: list[0]
+      currentWord: list[0],
+      errWids: [],
+      rId: rId || "",
     }, () => {
       KeepScreenUtil.start(this);
-      // 注意：不再调用 tts.clearCache()，改用 LRU 上限管理（见 utils/tts.js）
       setTimeout(() => {
         this.runDictFlow();
       }, 300);
@@ -107,27 +101,16 @@ Page({
 
         const onSpeakDone = (err) => {
           if (this.data.playStatus === "paused" || currentVersion !== requestVersion) return;
-
-          if (err) {
-            console.warn("TTS播报出错，直接继续下一个状态");
-          }
+          if (err) console.warn("TTS播报出错");
 
           if (currentReadRound < readRoundTotal) {
             const newStatus = STATUS_PREPARE_NEXT_ROUND;
-            const newText = this.getSubStatusText(newStatus, currentReadRound, readRoundTotal);
-            this.setData({
-              subStatus: newStatus,
-              subStatusText: newText
-            }, () => {
+            this.setData({ subStatus: newStatus, subStatusText: this.getSubStatusText(newStatus, currentReadRound, readRoundTotal) }, () => {
               this.runDictFlow();
             });
           } else {
             const newStatus = STATUS_GAP;
-            const newText = this.getSubStatusText(newStatus, currentReadRound, readRoundTotal);
-            this.setData({
-              subStatus: newStatus,
-              subStatusText: newText
-            }, () => {
+            this.setData({ subStatus: newStatus, subStatusText: this.getSubStatusText(newStatus, currentReadRound, readRoundTotal) }, () => {
               this.runDictFlow();
             });
           }
@@ -143,12 +126,7 @@ Page({
             this._timer = null;
             const nextRound = currentReadRound + 1;
             const newStatus = STATUS_PLAYING;
-            const newText = this.getSubStatusText(newStatus, nextRound, readRoundTotal);
-            this.setData({
-              currentReadRound: nextRound,
-              subStatus: newStatus,
-              subStatusText: newText
-            }, () => {
+            this.setData({ currentReadRound: nextRound, subStatus: newStatus, subStatusText: this.getSubStatusText(newStatus, nextRound, readRoundTotal) }, () => {
               this.runDictFlow();
             });
           }, this.data.gapSecond * 1000);
@@ -165,8 +143,6 @@ Page({
         }
         break;
       }
-      default:
-        break;
     }
   },
 
@@ -177,34 +153,37 @@ Page({
 
     const nextIdx = this.data.currentWordIndex + 1;
     if (nextIdx >= this.data.dictWordList.length) {
+      if (this.data.rId) {
+        const finalList = this.data.dictWordList.map(item => {
+          const tid = lStore.getWordId(item.text);
+          return { ...item, isErr: this.data.errWids.includes(tid) };
+        });
+        lStore.updateDictRecord(this.data.rId, this.data.errWids.length, 'completed', finalList);
+      }
       tts.speakFinish();
-      //结束强撑亮屏机制
       KeepScreenUtil.stop();
       wx.showModal({
         title: "听写结束🎉，请检查",
         content: "单词听写完毕,点”确定“进行检查",
         showCancel: false,
         success: () => {
-          console.log(Date.now());
           getApp().globalData.dictConfig = {
             wordList: this.data.dictWordList,
             errWids: this.data.errWids,
             time: Date.now(),
+            rId: this.data.rId, 
           }
-          wx.reLaunch({
-            url: `/pages/result/result`
-          });
+          wx.reLaunch({ url: `/pages/result/result` });
         }
       });
       return;
     }
     const newStatus = STATUS_PLAYING;
-    const newText = this.getSubStatusText(newStatus, 1, this.data.readRoundTotal);
     this.setData({
       currentWordIndex: nextIdx,
       currentReadRound: 1,
       subStatus: newStatus,
-      subStatusText: newText,
+      subStatusText: this.getSubStatusText(newStatus, 1, this.data.readRoundTotal),
       showWord: false,
       showCn: false,
       currentWord: this.data.dictWordList[nextIdx]
@@ -219,12 +198,11 @@ Page({
     let idx = this.data.currentWordIndex - 1;
     if (idx < 0) idx = 0;
     const newStatus = STATUS_PLAYING;
-    const newText = this.getSubStatusText(newStatus, 1, this.data.readRoundTotal);
     this.setData({
       currentWordIndex: idx,
       currentReadRound: 1,
       subStatus: newStatus,
-      subStatusText: newText,
+      subStatusText: this.getSubStatusText(newStatus, 1, this.data.readRoundTotal),
       showWord: false,
       showCn: false,
       currentWord: this.data.dictWordList[idx],
@@ -234,9 +212,7 @@ Page({
 
   nextWord() {
     this.clearAllTimer();
-    this.setData({ playStatus: "running" }, () => {
-      this.gotoNextWord();
-    });
+    this.setData({ playStatus: "running" }, () => { this.gotoNextWord(); });
   },
 
   togglePause() {
@@ -245,42 +221,35 @@ Page({
       tts.stopSpeak();
       this.setData({ playStatus: "paused" });
     } else {
-      this.setData({ playStatus: "running" }, () => {
-        this.runDictFlow();
-      });
+      this.setData({ playStatus: "running" }, () => { this.runDictFlow(); });
     }
   },
 
-  toggleShowCn() {
-    this.setData({ showCn: !this.data.showCn });
-  },
-
-  toggleShowWord() {
-    this.setData({ showWord: !this.data.showWord });
-  },
+  toggleShowCn() { this.setData({ showCn: !this.data.showCn }); },
+  toggleShowWord() { this.setData({ showWord: !this.data.showWord }); },
 
   add2ErrBook() {
     const errword = this.data.currentWord;
     const wid = lStore.getWordId(errword.text);
 
     if (this.data.errWids.includes(wid)) {
-      wx.showToast({
-        title: '单词"' + errword.text + '"已在错题本',
-        icon: 'none'
-      });
-      this.nextWord();
+      wx.showToast({ title: '单词"' + errword.text + '"已在错题本', icon: 'none' });
+      if (this.data.playStatus === "running") {
+        this.clearAllTimer();
+        tts.stopSpeak();
+        this.setData({ playStatus: "paused" });
+      }
       return;
     }
 
     lStore.addWrongWord(wid);
-    this.setData({
-      errWids: [...this.data.errWids, wid]
-    });
-    wx.showToast({
-      title: '✅单词"' + errword.text + '"已加入错题本',
-      icon: 'none'
-    });
-    this.nextWord();
+    this.setData({ errWids: [...this.data.errWids, wid] });
+    wx.showToast({ title: '✅单词"' + errword.text + '"已加入错题本', icon: 'none' });
+    if (this.data.playStatus === "running") {
+      this.clearAllTimer();
+      tts.stopSpeak();
+      this.setData({ playStatus: "paused" });
+    }
   },
 
   editCurrentWord() {
@@ -304,12 +273,16 @@ Page({
       content: "确定要结束本次听写吗？",
       success: res => {
         if (res.confirm) {
+          if (this.data.rId) {
+            // 只更新 errCount，不传 finalList：
+            // ongoing 记录的 wordList 保持 dictation 写入的完整词表，
+            // 避免 takeCount < total 时未听的词被 slice 后的列表覆盖丢失。
+            lStore.updateDictRecord(this.data.rId, this.data.errWids.length, 'ongoing');
+          }
           this.clearAllTimer();
           requestVersion++;
           tts.stopSpeak();
-          wx.reLaunch({
-            url: '/pages/index/index'
-          });
+          wx.reLaunch({ url: '/pages/index/index' });
         }
       }
     });
@@ -323,24 +296,12 @@ Page({
   },
 
   onUnload() {
-    //结束强撑亮屏机制
     KeepScreenUtil.stop();
     this.clearAllTimer();
     requestVersion++;
     tts.stopSpeak();
-    // 不再调用 tts.clearCache()，交由 LRU 上限管理
   },
 
-  onShareAppMessage(res) {
-    return {
-      title: getApp().globalData.appName,
-      path: "/pages/index/index"
-    }
-  },
-  onShareTimeline() {
-    return {
-      title: getApp().globalData.appName,
-      query: ""
-    }
-  },
+  onShareAppMessage(res) { return { title: getApp().globalData.appName, path: "/pages/index/index" }; },
+  onShareTimeline() { return { title: getApp().globalData.appName, query: "" }; },
 });
