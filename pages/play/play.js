@@ -227,6 +227,28 @@ Page({
 
   toggleShowCn() { this.setData({ showCn: !this.data.showCn }); },
   toggleShowWord() { this.setData({ showWord: !this.data.showWord }); },
+  
+  // 卡片单击：三态循环切换
+// 隐藏 → 仅释义 → 单词+释义 → 隐藏
+toggleCardDisplay() {
+  const { showWord, showCn } = this.data;
+
+  // 状态1：全隐藏 → 只显示释义
+  if (!showWord && !showCn) {
+    this.setData({ showCn: true, showWord: false });
+    return;
+  }
+
+  // 状态2：仅释义 → 单词 + 释义都显示
+  if (!showWord && showCn) {
+    this.setData({ showWord: true, showCn: true });
+    return;
+  }
+
+  // 状态3：都显示 → 回归全隐藏
+  this.setData({ showWord: false, showCn: false });
+},
+
 
   add2ErrBook() {
     const errword = this.data.currentWord;

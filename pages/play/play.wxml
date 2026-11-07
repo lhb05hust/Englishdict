@@ -29,10 +29,10 @@
   </view>
 
   <!-- 中间卡片：严格保持第一版样式，不再参与主题色调整 -->
-  <view class="word-card {{playStatus === 'paused' ? 'is-paused' : (subStatus === 1 ? 'is-speaking' : '')}}"
-        bindtap="replayCurrent"
-        bindtouchstart="onCardTouchStart"
-        bindtouchend="onCardTouchEnd">
+<view class="word-card {{playStatus === 'paused' ? 'is-paused' : (subStatus === 1 ? 'is-speaking' : '')}}"
+      bindtap="toggleCardDisplay"
+      bindtouchstart="onCardTouchStart"
+      bindtouchend="onCardTouchEnd">
     <block wx:if="{{!showWord && !showCn}}">
       <text class="word-hide">单词已隐藏</text>
     </block>
@@ -45,10 +45,10 @@
   <!-- 辅助操作区 -->
   <view class="aux-row">
     <view class="aux-btn {{showCn ? 'aux-active' : ''}}" bindtap="toggleShowCn" hover-class="btn-hover">
-      <text>看释义</text>
+      <text>{{ showCn ? '隐藏释义' : '看释义' }}</text>
     </view>
     <view class="aux-btn {{showWord ? 'aux-active' : ''}}" bindtap="toggleShowWord" hover-class="btn-hover">
-      <text>{{showWord ? '隐藏' : '看单词'}}</text>
+      <text>{{ showWord ? '隐藏单词' : '看单词' }}</text>
     </view>
     <view class="aux-btn {{isAddedErr ? 'aux-added' : ''}}" bindtap="add2ErrBook" hover-class="btn-hover">
       <text>{{isAddedErr ? '✓ 已加入' : '加错题'}}</text>
