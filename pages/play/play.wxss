@@ -188,17 +188,17 @@ page {
 }
 
 .ctrl-side {
-  width: 180rpx;
-  height: 84rpx;
+  width: 198rpx;
+  height: 90rpx;
   background: #ffffff;
   border: 2rpx solid #dbeafe;
-  border-radius: 42rpx;
+  border-radius: 45rpx;
   color: #666666;
 }
 
 .ctrl-text {
-  font-size: 28rpx;
-  font-weight: 500;
+  font-size: 30rpx;
+  font-weight: 600;
 }
 
 /* 中间圆形按钮：比上一版更深一点，但仍属于浅蓝体系 */
@@ -264,7 +264,7 @@ page {
 }
 
 .footer-hint {
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #94a3b8;
   text-align: center;
   margin-bottom: 16rpx;
