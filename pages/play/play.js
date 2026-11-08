@@ -227,7 +227,7 @@ Page({
 
   toggleShowCn() { this.setData({ showCn: !this.data.showCn }); },
   toggleShowWord() { this.setData({ showWord: !this.data.showWord }); },
-  
+
   // 卡片单击：三态循环切换
 // 隐藏 → 仅释义 → 单词+释义 → 隐藏
 toggleCardDisplay() {
@@ -272,6 +272,7 @@ toggleCardDisplay() {
       content: "确定要结束本次听写吗？",
       success: res => {
         if (res.confirm) {
+          getApp().globalData.editRId = this.data.rId || '';
           this.clearAllTimer();
           requestVersion++;
           tts.stopSpeak();

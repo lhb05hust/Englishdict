@@ -111,7 +111,15 @@ Page({
       totalWords: initList.length,
     });
   },
-
+  // 【新增】从 play 页「改词语」返回时，接住 rId 以便复用同一条记录
+  onShow() {
+    const app = getApp();
+    const editRId = app.globalData.editRId;
+    if (editRId) {
+      this.originalRId = editRId;
+      app.globalData.editRId = null;   // 消费掉，避免下个实例误读
+    }
+  },
   onReady() {
     this.updateItemRects();
     if (this.data.showAdd) {
