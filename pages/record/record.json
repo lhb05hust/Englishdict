@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "听写记录",
+  "navigationBarTitleText": "单词拍照听写",
   "usingComponents": {
     "van-nav-bar": "@vant/weapp/nav-bar/index",
     "van-cell": "@vant/weapp/cell/index",
